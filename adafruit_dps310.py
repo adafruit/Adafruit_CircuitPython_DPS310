@@ -51,8 +51,8 @@ from time import sleep
 import adafruit_bus_device.i2c_device as i2c_device
 from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct, Struct
 from adafruit_register.i2c_struct_array import StructArray
-from adafruit_register.i2c_bit import RWBit
-from adafruit_register.i2c_bits import RWBits
+from adafruit_register.i2c_bit import RWBit, ROBit
+from adafruit_register.i2c_bits import RWBits, ROBits
 
 _DPS310_DEFAULT_ADDRESS = 0x77 # DPS310 default i2c address
 _DPS310_DEVICE_ID = 0x10 # DPS310 device identifier
@@ -173,36 +173,49 @@ class DPS310:
     #     Adafruit_BusIO_Register PRS_CFG = Adafruit_BusIO_Register(
     #   i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_PRSCFG, 1);
 
-    _ratebits = RWBits(3, _DPS310_PRSCFG, 4)
-    _osbits = RWBits(4, _DPS310_PRSCFG, 0)
+    _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
+    _pressure_osbits = RWBits(4, _DPS310_PRSCFG, 0)
 
-    #   Adafruit_BusIO_RegisterBits ratebits =
-    #       Adafruit_BusIO_RegisterBits(&PRS_CFG, 3, 4);
 
-    #   Adafruit_BusIO_RegisterBits osbits =
-    #       Adafruit_BusIO_RegisterBits(&PRS_CFG, 4, 0);
+    _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
+    _temp_osbits = RWBits(4, _DPS310_TMPCFG, 0)
 
     _shiftbit = RWBit(_DPS310_CFGREG, 2)
     #   Adafruit_BusIO_Register CFG_REG = Adafruit_BusIO_Register(
     #       i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_CFGREG, 1);
     #   Adafruit_BusIO_RegisterBits shiftbit =
     #       Adafruit_BusIO_RegisterBits(&CFG_REG, 1, 2);
-
+    #COEF_RDY SENSOR_RDY TMP_RDY PRS_RDY
+    _coefficients_ready = RWBit(_DPS310_MEASCFG, 7)
     _sensor_ready = RWBit(_DPS310_MEASCFG, 6)
+    _temp_ready = RWBit(_DPS310_MEASCFG, 5)
+    _pressure_ready = RWBit(_DPS310_MEASCFG, 4)
     #     Adafruit_BusIO_Register MEAS_CFG = Adafruit_BusIO_Register(
     #       i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_MEASCFG, 1);
     #   Adafruit_BusIO_RegisterBits SENSOR_RDY =
     #       Adafruit_BusIO_RegisterBits(&MEAS_CFG, 1, 6);
 
-    _raw_pressure = ROUnaryStruct(_DPS310_PRSB2, ">b")
+    _raw_pressure = ROBits(24, _DPS310_PRSB2, 0, 3)
+    _raw_pressure2 = ROUnaryStruct(_DPS310_PRSB2, ">b")
+    _raw_pressure3 = Struct(_DPS310_PRSB2, ">b")
     #  Adafruit_BusIO_Register PRS_B2 = Adafruit_BusIO_Register(
     #   i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_PRSB2, 3, MSBFIRST);
 
-    _raw_temperature = ROUnaryStruct(_DPS310_TMPB2, ">b")
+    _raw_temperature = ROBits(24, _DPS310_TMPB2, 0, 3)
 
     #       Adafruit_BusIO_Register TMP_B2 = Adafruit_BusIO_Register(
     #   i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_TMPB2, 3, MSBFIRST);
 
+    _coeff_temp_src_bit = ROBit(_DPS310_TMPCOEFSRCE, 7)
+    # Adafruit_BusIO_Register TMP_COEFF = Adafruit_BusIO_Register(
+    #     i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_TMPCOEFSRCE, 1);
+    # Adafruit_BusIO_RegisterBits srcbit =
+    #     Adafruit_BusIO_RegisterBits(&TMP_COEFF, 1, 7);
+
+    _temp_src_bit = RWBit(_DPS310_TMPCFG, 7)
+    # // the bit is in another register
+    # Adafruit_BusIO_RegisterBits extbit =
+    #     Adafruit_BusIO_RegisterBits(&TMP_CFG, 1, 7);
 
     _oversample_scalefactor = (524288, 1572864, 3670016, 7864320, 253952,
         516096, 1040384, 2088960)
@@ -220,22 +233,21 @@ class DPS310:
         print("called initialize")
         self.reset()
         # wait for hardware reset to finish
+        sleep(0.010)
         print("reset finished")
         self._read_calibration()
-        # // default to high precision
-        # self.pressure_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
-        # configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-        # self.temperature_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
-        # setMode(DPS310_CONT_PRESTEMP);
-        self.mode = Mode.CONT_PRESSURE
-        # // wait until we have at least one good measurement
-        # while (!temperatureAvailable() || !pressureAvailable()) {
-        #     delay(10);
-        # }
-        # return true;
-        sleep(1)
-        print("mode:", self.mode)
+        self._pressure_scale = None
+        self.pressure_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
+        self.temperature_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
 
+        self.mode = Mode.CONT_PRESTEMP
+
+        # wait until we have at least one good measurement
+        while (self._temp_ready is False) and (self._pressure_ready is False):
+            sleep(0.001)
+
+        print("mode:", self.mode)
+        self._pressure_scale = 1
     def reset(self):
         """Perform a soft-reset on the sensor"""
         self._reset = 0x89
@@ -246,13 +258,29 @@ class DPS310:
     def pressure(self):
         """Returns the current pressure reading in kPA"""
 
-        # raw_pressure = self._raw_pressure
-        # raw_pressure = twosComplement(PRS_B2.read(), 24);
+        # buf = bytearray(buffer_list)
 
-        #print("Raw prs: " , raw_pressure)
-        # _pressure = (float)raw_pressure / pressure_scale
-        # print("Scaled prs:", _pressure)
-        return self._raw_pressure
+    
+
+
+        # with obj.i2c_device as i2c:
+        #     i2c.write_then_readinto(self.buffer, self.buffer, out_end=1, in_start=1)
+
+        # with self.i2c_device as i2c:
+        #     i2c.readinto(buf)
+
+
+        raw_temperature = self.twosComplement(self._raw_temperature, 24)
+        raw_pressure = self.twosComplement(self._raw_pressure, 24)
+
+        _scaled_rawtemp = raw_temperature / self.temp_scale
+        _temperature = _scaled_rawtemp * _c1 + _c0 / 2.0
+
+        p_red = raw_pressure / self._pressure_scale
+        pres_calc = self._c00 + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30)) +     _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21))
+
+        final_pressure = pres_calc / 100
+        return final_pressure
 
     @property
     def temperature(self):
@@ -279,19 +307,24 @@ class DPS310:
         self._mode_bits = value
 
     def pressure_configuration(self, rate, oversample):
-        self._ratebits = rate
-        self._osbits = oversample
+        """Configure the pressure rate and oversample count"""
+        self._pressure_ratebits = rate
+        self._pressure_osbits = oversample
 
-
-        if oversample > Samples.COUNT_8:
-            self._shiftbit = 1
-        else:
-            self._shiftbit = 0
+        self._shiftbit = (oversample > Samples.COUNT_8)
 
         self._pressure_scale = self._oversample_scalefactor[oversample]
 
-    @staticmethod
-    def twosComplement(val, bits):
+    def temperature_configuration(self, rate, oversample):
+        """Configure the temperature rate and oversample count"""
+
+        self._temp_ratebits = rate
+        self._temp_osbits = oversample
+        self._shiftbit = (oversample > Samples.COUNT_8)
+
+        self._tmp_src_bit = self._coeff_temp_src_bit
+
+    def twosComplement(self, val, bits):
         if (val & (1 << (bits - 1))):
             val -= (1 << bits)
 
@@ -299,39 +332,43 @@ class DPS310:
 
 
     def _read_calibration(self):
-        pass
 
-        # void Adafruit_DPS310::_readCalibration(void) {
-        # // Wait till we're eady to read calibration
-        # Adafruit_BusIO_Register MEAS_CFG = Adafruit_BusIO_Register(
-        #     i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, DPS310_MEASCFG, 1);
-        # Adafruit_BusIO_RegisterBits CALIB_RDY =
-        #     Adafruit_BusIO_RegisterBits(&MEAS_CFG, 1, 7);
-        # while (!CALIB_RDY.read()) {
-        #     delay(1);
-        # }
+        while not self._coefficients_ready:
+            sleep(0.001)
 
-        # uint8_t coeffs[18];
-        # for (uint8_t addr = 0; addr < 18; addr++) {
-        #     Adafruit_BusIO_Register coeff = Adafruit_BusIO_Register(
-        #         i2c_dev, spi_dev, ADDRBIT8_HIGH_TOREAD, 0x10 + addr, 1);
-        #     coeffs[addr] = coeff.read();
-        # }
-        # _c0 = ((uint16_t)coeffs[0] << 4) | (((uint16_t)coeffs[1] >> 4) & 0x0F);
-        # _c0 = twosComplement(_c0, 12);
+        buffer = bytearray(19) # addr + reads
+        coeffs = []
+        for addr in range(18):
+            buffer = bytearray(2) # addr + reads
+            buffer[0] = 0x10 + addr
 
-        # _c1 = twosComplement((((uint16_t)coeffs[1] & 0x0F) << 8) | coeffs[2], 12);
+            with self.i2c_device as i2c:
+                i2c.write_then_readinto(buffer, buffer, out_end=1, in_start=1)
+                coeffs[addr] = buffer[1]
 
-        # _c00 = ((uint32_t)coeffs[3] << 12) | ((uint32_t)coeffs[4] << 4) |
-        #         (((uint32_t)coeffs[5] >> 4) & 0x0F);
-        # _c00 = twosComplement(_c00, 20);
+        self._c0 = (coeffs[0] << 4) | ((coeffs[1] >> 4) & 0x0F)
+        self._c0 = twosComplement(_c0, 12)
 
-        # _c10 = (((uint32_t)coeffs[5] & 0x0F) << 16) | ((uint32_t)coeffs[6] << 8) |
-        #         (uint32_t)coeffs[7];
-        # _c10 = twosComplement(_c10, 20);
+        self._c1 = twosComplement(((coeffs[1] & 0x0F) << 8) | coeffs[2], 12)
 
-        # _c01 = twosComplement(((uint16_t)coeffs[8] << 8) | (uint16_t)coeffs[9], 16);
-        # _c11 = twosComplement(((uint16_t)coeffs[10] << 8) | (uint16_t)coeffs[11], 16);
-        # _c20 = twosComplement(((uint16_t)coeffs[12] << 8) | (uint16_t)coeffs[13], 16);
-        # _c21 = twosComplement(((uint16_t)coeffs[14] << 8) | (uint16_t)coeffs[15], 16);
-        # _c30 = twosComplement(((uint16_t)coeffs[16] << 8) | (uint16_t)coeffs[17], 16);
+        self._c00 = (coeffs[3] << 12) | (coeffs[4] << 4) | ((coeffs[5] >> 4) & 0x0F)
+        self._c00 = twosComplement(_c00, 20)
+
+        self._c10 = ((coeffs[5] & 0x0F) << 16) | (coeffs[6] << 8) |coeffs[7]
+        self._c10 = twosComplement(_c10, 20)
+
+        self._c01 = twosComplement((coeffs[8] << 8) | coeffs[9], 16)
+        self._c11 = twosComplement((coeffs[10] << 8) | coeffs[11], 16)
+        self._c20 = twosComplement((coeffs[12] << 8) | coeffs[13], 16)
+        self._c21 = twosComplement((coeffs[14] << 8) | coeffs[15], 16)
+        self._c30 = twosComplement((coeffs[16] << 8) | coeffs[17], 16)
+
+        print("c0 = ", _c0)
+        print("c1 = ", _c1)
+        print("c00 = ", _c00)
+        print("c10 = ", _c10)
+        print("c01 = ", _c01)
+        print("c11 = ", _c11)
+        print("c20 = ", _c20)
+        print("c21 = ", _c21)
+        print("c30 = ", _c30)

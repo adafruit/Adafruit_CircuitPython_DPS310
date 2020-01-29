@@ -12,8 +12,10 @@ print("******************************************************************")
 
 dps310 = adafruit_dps310.DPS310(i2c)
 
-for cnt in range(2):
-    print("Temp:", dps310.temperature)
-    print("Pressure", dps310.pressure)
-    print("******************************************************************")
-    time.sleep(0.4)
+# for cnt in range(2):
+while True:
+    # > Pressure = 1023.07 hPa
+
+    # print("prssure(bin): ", format(dps310.pressure, '#010b'))
+    print("Press:", dps310.pressure)
+    time.sleep(0.1)
