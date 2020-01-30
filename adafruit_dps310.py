@@ -115,11 +115,11 @@ Rate.add_values((
     ('RATE_128_HZ', 7, 128, None)
 ))
 
-class Samples(CV):
+class SampleCount(CV):
     """Options for oversample_count"""
     pass
 
-Samples.add_values((
+SampleCount.add_values((
     ('COUNT_1', 0, 1, None),
     ('COUNT_2', 1, 2, None),
     ('COUNT_4', 2, 4, None),
@@ -138,27 +138,20 @@ class DPS310:
         :param address: The I2C slave address of the sensor
 
     """
-
-
     # Register definitions
     _device_id = ROUnaryStruct(_DPS310_PRODREVID, ">B")
-    _reset = UnaryStruct(_DPS310_RESET, ">B")
+    _reset_register = UnaryStruct(_DPS310_RESET, ">B")
     _mode_bits = RWBits(3, _DPS310_MEASCFG, 0)
 
     _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
     _pressure_osbits = RWBits(4, _DPS310_PRSCFG, 0)
-    _pressure_config = RWBits(8, _DPS310_PRSCFG, 0)
-
 
     _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
     _temp_osbits = RWBits(4, _DPS310_TMPCFG, 0)
 
     _temp_measurement_src_bit = RWBit(_DPS310_TMPCFG, 7)
 
-    _temp_config = RWBits(8, _DPS310_TMPCFG, 0)
-
     _pressure_shiftbit = RWBit(_DPS310_CFGREG, 2)
-
     _temp_shiftbit = RWBit(_DPS310_CFGREG, 3)
 
     _coefficients_ready = RWBit(_DPS310_MEASCFG, 7)
@@ -170,7 +163,6 @@ class DPS310:
     _raw_temperature = ROBits(24, _DPS310_TMPB2, 0, 3, lsb_first=False)
 
     _calib_coeff_temp_src_bit = ROBit(_DPS310_TMPCOEFSRCE, 7)
-
 
     def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
@@ -197,22 +189,28 @@ class DPS310:
     def initialize(self):
         """Reset the sensor to the default state"""
 
-
-        self.reset()
-        # wait for hardware reset to finish
-        sleep(0.010)
+        self._reset()
         self._read_calibration()
-        self.pressure_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
-        self.temperature_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
+
+        # make sure we're using the temperature source used for calibration
+        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
+
+        self.pressure_rate = Rate.RATE_64_HZ
+        self.pressure_oversample_count = SampleCount.COUNT_64
+        self.temperature_rate = Rate.RATE_64_HZ
+        self.temperature_oversample_count = SampleCount.COUNT_64
         self.mode = Mode.CONT_PRESTEMP
 
         # wait until we have at least one good measurement
+
         while (self._temp_ready is False) or (self._pressure_ready is False):
             sleep(0.001)
 
-    def reset(self):
+    def _reset(self):
         """Perform a soft-reset on the sensor"""
-        self._reset = 0x89
+        self._reset_register = 0x89
+        # wait for hardware reset to finish
+        sleep(0.010)
         while not self._sensor_ready:
             sleep(0.001)
 
@@ -221,9 +219,9 @@ class DPS310:
         """Returns the current pressure reading in kPA"""
 
         temp_reading = self._raw_temperature
-        raw_temperature = self.twos_complement(temp_reading, 24)
+        raw_temperature = self._twos_complement(temp_reading, 24)
         pressure_reading = self._raw_pressure
-        raw_pressure = self.twos_complement(pressure_reading, 24)
+        raw_pressure = self._twos_complement(pressure_reading, 24)
         _scaled_rawtemp = raw_temperature / self._temp_scale
 
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
@@ -243,11 +241,6 @@ class DPS310:
         _scaled_rawtemp = self._raw_temperature / self._temp_scale
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
         return _temperature
-
-    @property
-    def sensor_ready(self):
-        """Identifies the sensorhas measurements ready"""
-        return self._sensor_ready
 
     @property
     def temperature_ready(self):
@@ -272,20 +265,55 @@ class DPS310:
 
         self._mode_bits = value
 
-    def pressure_configuration(self, rate, oversample):
-        """Configure the pressure rate and oversample count"""
-        self._pressure_ratebits = rate
-        self._pressure_osbits = oversample
-        self._pressure_shiftbit = (oversample > Samples.COUNT_8)
-        self._pressure_scale = self._oversample_scalefactor[oversample]
+    @property
+    def pressure_rate(self):
+        """Configure the pressure measurement rate. Must be a Rate"""
+        return self._pressure_ratebits
 
-    def temperature_configuration(self, rate, oversample):
-        """Configure the temperature rate and oversample count"""
-        self._temp_ratebits = rate
-        self._temp_osbits = oversample
-        self._temp_scale = self._oversample_scalefactor[oversample]
-        self._temp_shiftbit = (oversample > Samples.COUNT_8)
-        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
+    @pressure_rate.setter
+    def pressure_rate(self, value):
+        if not Rate.is_valid(value):
+            raise AttributeError("pressure_rate must be a Rate")
+        self._pressure_ratebits = value
+
+    @property
+    def pressure_oversample_count(self):
+        """The number of samples taken per pressure measurement. Must be a SampleCount"""
+        return self._pressure_osbits
+
+    @pressure_oversample_count.setter
+    def pressure_oversample_count(self, value):
+        if not SampleCount.is_valid(value):
+            raise AttributeError("pressure_oversample_count must be a SampleCount")
+
+        self._pressure_osbits = value
+        self._pressure_shiftbit = (value > SampleCount.COUNT_8)
+        self._pressure_scale = self._oversample_scalefactor[value]
+
+    @property
+    def temperature_rate(self):
+        """Configure the temperature measurement rate. Must be a Rate"""
+        return self._temp_ratebits
+
+    @temperature_rate.setter
+    def temperature_rate(self, value):
+        if not Rate.is_valid(value):
+            raise AttributeError("temperature_rate must be a Rate")
+        self._temp_ratebits = value
+
+    @property
+    def temperature_oversample_count(self):
+        """The number of samples taken per temperature measurement. Must be a SampleCount"""
+        return self._temp_osbits
+
+    @temperature_oversample_count.setter
+    def temperature_oversample_count(self, value):
+        if not SampleCount.is_valid(value):
+            raise AttributeError("temperature_oversample_count must be a SampleCount")
+
+        self._temp_osbits = value
+        self._temp_scale = self._oversample_scalefactor[value]
+        self._temp_shiftbit = (value > SampleCount.COUNT_8)
 
     @staticmethod
     def _twos_complement(val, bits):
@@ -312,18 +340,18 @@ class DPS310:
                 coeffs[offset] = buffer[1]
 
         self._c0 = (coeffs[0] << 4) | ((coeffs[1] >> 4) & 0x0F)
-        self._c0 = self.twos_complement(self._c0, 12)
+        self._c0 = self._twos_complement(self._c0, 12)
 
-        self._c1 = self.twos_complement(((coeffs[1] & 0x0F) << 8) | coeffs[2], 12)
+        self._c1 = self._twos_complement(((coeffs[1] & 0x0F) << 8) | coeffs[2], 12)
 
         self._c00 = (coeffs[3] << 12) | (coeffs[4] << 4) | ((coeffs[5] >> 4) & 0x0F)
-        self._c00 = self.twos_complement(self._c00, 20)
+        self._c00 = self._twos_complement(self._c00, 20)
 
         self._c10 = ((coeffs[5] & 0x0F) << 16) | (coeffs[6] << 8) |coeffs[7]
-        self._c10 = self.twos_complement(self._c10, 20)
+        self._c10 = self._twos_complement(self._c10, 20)
 
-        self._c01 = self.twos_complement((coeffs[8] << 8) | coeffs[9], 16)
-        self._c11 = self.twos_complement((coeffs[10] << 8) | coeffs[11], 16)
-        self._c20 = self.twos_complement((coeffs[12] << 8) | coeffs[13], 16)
-        self._c21 = self.twos_complement((coeffs[14] << 8) | coeffs[15], 16)
-        self._c30 = self.twos_complement((coeffs[16] << 8) | coeffs[17], 16)
+        self._c01 = self._twos_complement((coeffs[8] << 8) | coeffs[9], 16)
+        self._c11 = self._twos_complement((coeffs[10] << 8) | coeffs[11], 16)
+        self._c20 = self._twos_complement((coeffs[12] << 8) | coeffs[13], 16)
+        self._c21 = self._twos_complement((coeffs[14] << 8) | coeffs[15], 16)
+        self._c30 = self._twos_complement((coeffs[16] << 8) | coeffs[17], 16)
