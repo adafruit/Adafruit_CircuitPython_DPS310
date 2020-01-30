@@ -281,25 +281,16 @@ class DPS310:
         """Configure the pressure rate and oversample count"""
         self._pressure_ratebits = rate
         self._pressure_osbits = oversample
-
         self._pressure_shiftbit = (oversample > Samples.COUNT_8)
-
         self._pressure_scale = self._oversample_scalefactor[oversample]
-    #################   TEMP CONFIG  ############################################
+
     def temperature_configuration(self, rate, oversample):
         """Configure the temperature rate and oversample count"""
-
         self._temp_ratebits = rate
         self._temp_osbits = oversample
         self._temp_scale = self._oversample_scalefactor[oversample]
-        # print("    ***** setting temp shiftbit *******")
-        self._temp_shiftbit = (oversample > Samples.COUNT_8) # 0x9
-        # print("    ***** getting temp coeff source *******")
-
-        coeff_src = self._calib_coeff_temp_src_bit # 0x28
-
-        self._temp_measurement_src_bit = coeff_src # 0x7
-    #############################################################################
+        self._temp_shiftbit = (oversample > Samples.COUNT_8)
+        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
 
     def twosComplement(self, val, bits):
         if (val & (1 << (bits - 1))):
@@ -307,16 +298,15 @@ class DPS310:
 
         return val
 
-
     def _read_calibration(self):
 
         while not self._coefficients_ready:
             sleep(0.001)
 
-        buffer = bytearray(19) # addr + reads
+        buffer = bytearray(19)
         coeffs = [None]*18
         for offset in range(18):
-            buffer = bytearray(2) # offset + reads
+            buffer = bytearray(2)
             buffer[0] = 0x10 + offset
 
             with self.i2c_device as i2c:
