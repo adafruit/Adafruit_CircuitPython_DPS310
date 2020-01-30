@@ -33,8 +33,7 @@ Implementation Notes
 
 **Hardware:**
 
-.. todo:: Update the PID for the below and add links to any specific hardware product page(s), or category page(s)
-* Adafruit's DPS310 Breakout: https://adafruit.com/product/44XX
+* Adafruit's DPS310 Breakout: https://www.adafruit.com/product/4494
 
 **Software and Dependencies:**
 
@@ -49,8 +48,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 # Common imports; remove if unused or pylint will complain
 from time import sleep
 import adafruit_bus_device.i2c_device as i2c_device
-from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct, Struct
-from adafruit_register.i2c_struct_array import StructArray
+from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
 from adafruit_register.i2c_bit import RWBit, ROBit
 from adafruit_register.i2c_bits import RWBits, ROBits
 
@@ -68,6 +66,8 @@ _DPS310_PRODREVID = 0x0D   # Register that contains the part ID
 _DPS310_TMPCOEFSRCE = 0x28 # Temperature calibration src
 
 #pylint: enable=bad-whitespace
+#pylint: disable=no-member,unnecessary-pass
+
 class CV:
     """struct helper"""
 
@@ -92,7 +92,6 @@ class Mode(CV):
     """Options for ``mode``"""
     pass #pylint: disable=unnecessary-pass
 
-#pylint: disable=no-member
 Mode.add_values((
     ('IDLE', 0, "Idle", None),
     ('ONE_PRESSURE', 1, "One-Shot Pressure", None),
@@ -131,8 +130,9 @@ Samples.add_values((
     ('COUNT_64', 6, 64, None),
     ('COUNT_128', 7, 128, None),
 ))
-
+#pylint: enable=unnecessary-pass
 class DPS310:
+    #pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
 
         :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
@@ -178,36 +178,6 @@ class DPS310:
 
         if self._device_id != _DPS310_DEVICE_ID:
             raise RuntimeError("Failed to find DPS310 - check your wiring!")
-
-        self.initialize()
-
-    def initialize(self):
-        """Reset the sensor to the default state"""
-        # print("called initialize")
-        self._init_values()
-        self.reset()
-        # wait for hardware reset to finish
-        sleep(0.010)
-        self._read_calibration()
-        self.pressure_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
-        self.temperature_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
-        self.mode = Mode.CONT_PRESTEMP
-
-        # wait until we have at least one good measurement
-        tmprdy = self._temp_ready
-        prsrdy = self._pressure_ready
-        while (tmprdy is False) or (prsrdy is False):
-            sleep(0.001)
-            tmprdy = self._temp_ready
-            prsrdy = self._pressure_ready
-
-    def reset(self):
-        """Perform a soft-reset on the sensor"""
-        self._reset = 0x89
-        while not self._sensor_ready:
-            sleep(0.001)
-
-    def _init_values(self):
         self._pressure_scale = None
         self._temp_scale = None
         self._c0 = None
@@ -221,16 +191,40 @@ class DPS310:
         self._c20 = None
         self._c21 = None
         self._c30 = None
-        self._oversample_scalefactor = (524288, 1572864, 3670016, 7864320, 253952, 516096, 1040384, 2088960)
+        self._oversample_scalefactor = (524288, 1572864, 3670016, 7864320, 253952,
+                                        516096, 1040384, 2088960)
+        self.initialize()
+
+    def initialize(self):
+        """Reset the sensor to the default state"""
+
+
+        self.reset()
+        # wait for hardware reset to finish
+        sleep(0.010)
+        self._read_calibration()
+        self.pressure_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
+        self.temperature_configuration(Rate.RATE_64_HZ, Samples.COUNT_64)
+        self.mode = Mode.CONT_PRESTEMP
+
+        # wait until we have at least one good measurement
+        while (self._temp_ready is False) or (self._pressure_ready is False):
+            sleep(0.001)
+
+    def reset(self):
+        """Perform a soft-reset on the sensor"""
+        self._reset = 0x89
+        while not self._sensor_ready:
+            sleep(0.001)
 
     @property
     def pressure(self):
         """Returns the current pressure reading in kPA"""
 
         temp_reading = self._raw_temperature
-        raw_temperature = self.twosComplement(temp_reading, 24)
+        raw_temperature = self.twos_complement(temp_reading, 24)
         pressure_reading = self._raw_pressure
-        raw_pressure = self.twosComplement(pressure_reading, 24)
+        raw_pressure = self.twos_complement(pressure_reading, 24)
         _scaled_rawtemp = raw_temperature / self._temp_scale
 
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
@@ -238,7 +232,8 @@ class DPS310:
         p_red = raw_pressure / self._pressure_scale
 
 
-        pres_calc = self._c00 + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30)) +     _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21))
+        pres_calc = (self._c00 + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30)) +
+                     _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21)))
 
         final_pressure = pres_calc / 100
         return final_pressure
@@ -262,6 +257,7 @@ class DPS310:
 
     @property
     def pressure_ready(self):
+        """Returns true if pressure readings are ready"""
         return self._pressure_ready
 
     @property
@@ -271,11 +267,11 @@ class DPS310:
 
     @mode.setter
     def mode(self, value):
+        """Set the mode"""
         if not Mode.is_valid(value):
             raise AttributeError("mode must be an `Mode`")
 
         self._mode_bits = value
-    #################   PRESSURE CONFIG  ########################################
 
     def pressure_configuration(self, rate, oversample):
         """Configure the pressure rate and oversample count"""
@@ -292,8 +288,9 @@ class DPS310:
         self._temp_shiftbit = (oversample > Samples.COUNT_8)
         self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
 
-    def twosComplement(self, val, bits):
-        if (val & (1 << (bits - 1))):
+    @staticmethod
+    def _twos_complement(val, bits):
+        if val & (1 << (bits - 1)):
             val -= (1 << bits)
 
         return val
@@ -316,18 +313,18 @@ class DPS310:
                 coeffs[offset] = buffer[1]
 
         self._c0 = (coeffs[0] << 4) | ((coeffs[1] >> 4) & 0x0F)
-        self._c0 = self.twosComplement(self._c0, 12)
+        self._c0 = self.twos_complement(self._c0, 12)
 
-        self._c1 = self.twosComplement(((coeffs[1] & 0x0F) << 8) | coeffs[2], 12)
+        self._c1 = self.twos_complement(((coeffs[1] & 0x0F) << 8) | coeffs[2], 12)
 
         self._c00 = (coeffs[3] << 12) | (coeffs[4] << 4) | ((coeffs[5] >> 4) & 0x0F)
-        self._c00 = self.twosComplement(self._c00, 20)
+        self._c00 = self.twos_complement(self._c00, 20)
 
         self._c10 = ((coeffs[5] & 0x0F) << 16) | (coeffs[6] << 8) |coeffs[7]
-        self._c10 = self.twosComplement(self._c10, 20)
+        self._c10 = self.twos_complement(self._c10, 20)
 
-        self._c01 = self.twosComplement((coeffs[8] << 8) | coeffs[9], 16)
-        self._c11 = self.twosComplement((coeffs[10] << 8) | coeffs[11], 16)
-        self._c20 = self.twosComplement((coeffs[12] << 8) | coeffs[13], 16)
-        self._c21 = self.twosComplement((coeffs[14] << 8) | coeffs[15], 16)
-        self._c30 = self.twosComplement((coeffs[16] << 8) | coeffs[17], 16)
+        self._c01 = self.twos_complement((coeffs[8] << 8) | coeffs[9], 16)
+        self._c11 = self.twos_complement((coeffs[10] << 8) | coeffs[11], 16)
+        self._c20 = self.twos_complement((coeffs[12] << 8) | coeffs[13], 16)
+        self._c21 = self.twos_complement((coeffs[14] << 8) | coeffs[15], 16)
+        self._c30 = self.twos_complement((coeffs[16] << 8) | coeffs[17], 16)
