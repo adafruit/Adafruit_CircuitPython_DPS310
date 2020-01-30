@@ -88,7 +88,30 @@ class CV:
         return value in cls.string
 
 class Mode(CV):
-    """Options for ``mode``"""
+    """Options for ``mode``
+
+    +--------------------------+------------------------------------------------------------------+
+    | Mode                     | Description                                                      |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.IDLE``            | Puts the sensor into a shutdown state                            |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.ONE_PRESSURE``    | Setting `mode` to ``Mode.ONE_PRESSURE`` takes a single pressure  |
+    |                          | measurement then switches to ``Mode.IDLE``                       |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.ONE_TEMPERATURE`` | Setting `mode` to ``Mode.ONE_TEMPERATURE`` takes a single        |
+    |                          | temperature measurement then switches to ``Mode.IDLE``           |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.CONT_PRESSURE``   | Take pressure measurements at the current `pressure_rate`.       |
+    |                          | `temperature` will not be updated                                |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.CONT_TEMP``       | Take temperature measurements at the current `temperature_rate`. |
+    |                          | `pressure` will not be updated                                   |
+    +--------------------------+------------------------------------------------------------------+
+    | ``Mode.CONT_PRESTEMP``   | Take temperature and pressure measurements at the current        |
+    |                          | `pressure_rate` and `temperature_rate`                           |
+    +--------------------------+------------------------------------------------------------------+
+
+    """
     pass #pylint: disable=unnecessary-pass
 
 Mode.add_values((
@@ -101,7 +124,7 @@ Mode.add_values((
 ))
 
 class Rate(CV):
-    """Options for data_rate"""
+    """Options for `pressure_rate` and `temperature_rate`"""
     pass
 
 Rate.add_values((
@@ -116,7 +139,7 @@ Rate.add_values((
 ))
 
 class SampleCount(CV):
-    """Options for oversample_count"""
+    """Options for `temperature_oversample_count` and `pressure_oversample_count`"""
     pass
 
 SampleCount.add_values((
@@ -254,12 +277,11 @@ class DPS310:
 
     @property
     def mode(self):
-        """An example"""
+        """The measurement mode. Must be a `Mode`. See the `Mode` documentation for details"""
         return self._mode_bits
 
     @mode.setter
     def mode(self, value):
-        """Set the mode"""
         if not Mode.is_valid(value):
             raise AttributeError("mode must be an `Mode`")
 
@@ -267,7 +289,7 @@ class DPS310:
 
     @property
     def pressure_rate(self):
-        """Configure the pressure measurement rate. Must be a Rate"""
+        """Configure the pressure measurement rate. Must be a `Rate`"""
         return self._pressure_ratebits
 
     @pressure_rate.setter
@@ -278,7 +300,7 @@ class DPS310:
 
     @property
     def pressure_oversample_count(self):
-        """The number of samples taken per pressure measurement. Must be a SampleCount"""
+        """The number of samples taken per pressure measurement. Must be a `SampleCount`"""
         return self._pressure_osbits
 
     @pressure_oversample_count.setter
@@ -292,7 +314,7 @@ class DPS310:
 
     @property
     def temperature_rate(self):
-        """Configure the temperature measurement rate. Must be a Rate"""
+        """Configure the temperature measurement rate. Must be a `Rate`"""
         return self._temp_ratebits
 
     @temperature_rate.setter
@@ -303,7 +325,7 @@ class DPS310:
 
     @property
     def temperature_oversample_count(self):
-        """The number of samples taken per temperature measurement. Must be a SampleCount"""
+        """The number of samples taken per temperature measurement. Must be a `SampleCount`"""
         return self._temp_osbits
 
     @temperature_oversample_count.setter
