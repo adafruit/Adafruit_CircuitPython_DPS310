@@ -25,7 +25,6 @@
 
 Library for the DPS310 Precision Barometric Pressure Sensor
 
-
 * Author(s): Bryan Siepert
 
 Implementation Notes
