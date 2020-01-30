@@ -1,8 +1,8 @@
 Introduction
 ============
 
-.. image:: https://readthedocs.org/projects/adafruit-circuitpython-dps310/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/dps310/en/latest/
+.. image:: https://readthedocs.org/projects/adafruit-circuitpython-dsp310/badge/?version=latest
+    :target: https://adafruit-circuitpython-dsp310.readthedocs.io/en/latest/
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/discord/327254708534116352.svg
