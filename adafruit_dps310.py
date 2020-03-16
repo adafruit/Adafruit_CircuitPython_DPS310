@@ -51,21 +51,22 @@ from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
 from adafruit_register.i2c_bit import RWBit, ROBit
 from adafruit_register.i2c_bits import RWBits, ROBits
 
-_DPS310_DEFAULT_ADDRESS = 0x77 # DPS310 default i2c address
-_DPS310_DEVICE_ID = 0x10 # DPS310 device identifier
+_DPS310_DEFAULT_ADDRESS = 0x77  # DPS310 default i2c address
+_DPS310_DEVICE_ID = 0x10  # DPS310 device identifier
 
-_DPS310_PRSB2 = 0x00       # Highest byte of pressure data
-_DPS310_TMPB2 = 0x03       # Highest byte of temperature data
-_DPS310_PRSCFG = 0x06      # Pressure configuration
-_DPS310_TMPCFG = 0x07      # Temperature configuration
-_DPS310_MEASCFG = 0x08     # Sensor configuration
-_DPS310_CFGREG = 0x09      # Interrupt/FIFO configuration
-_DPS310_RESET = 0x0C       # Soft reset
-_DPS310_PRODREVID = 0x0D   # Register that contains the part ID
-_DPS310_TMPCOEFSRCE = 0x28 # Temperature calibration src
+_DPS310_PRSB2 = 0x00  # Highest byte of pressure data
+_DPS310_TMPB2 = 0x03  # Highest byte of temperature data
+_DPS310_PRSCFG = 0x06  # Pressure configuration
+_DPS310_TMPCFG = 0x07  # Temperature configuration
+_DPS310_MEASCFG = 0x08  # Sensor configuration
+_DPS310_CFGREG = 0x09  # Interrupt/FIFO configuration
+_DPS310_RESET = 0x0C  # Soft reset
+_DPS310_PRODREVID = 0x0D  # Register that contains the part ID
+_DPS310_TMPCOEFSRCE = 0x28  # Temperature calibration src
 
-#pylint: enable=bad-whitespace
-#pylint: disable=no-member,unnecessary-pass
+# pylint: enable=bad-whitespace
+# pylint: disable=no-member,unnecessary-pass
+
 
 class CV:
     """struct helper"""
@@ -86,6 +87,7 @@ class CV:
     def is_valid(cls, value):
         """Validate that a given value is a member"""
         return value in cls.string
+
 
 class Mode(CV):
     """Options for ``mode``
@@ -112,49 +114,63 @@ class Mode(CV):
     +--------------------------+------------------------------------------------------------------+
 
     """
-    pass #pylint: disable=unnecessary-pass
 
-Mode.add_values((
-    ('IDLE', 0, "Idle", None),
-    ('ONE_PRESSURE', 1, "One-Shot Pressure", None),
-    ('ONE_TEMPERATURE', 2, "One-Shot Temperature", None),
-    ('CONT_PRESSURE', 5, "Continuous Pressure", None),
-    ('CONT_TEMP', 6, "Continuous Temperature", None),
-    ('CONT_PRESTEMP', 7, "Continuous Pressure & Temperature", None),
-))
+    pass  # pylint: disable=unnecessary-pass
+
+
+Mode.add_values(
+    (
+        ("IDLE", 0, "Idle", None),
+        ("ONE_PRESSURE", 1, "One-Shot Pressure", None),
+        ("ONE_TEMPERATURE", 2, "One-Shot Temperature", None),
+        ("CONT_PRESSURE", 5, "Continuous Pressure", None),
+        ("CONT_TEMP", 6, "Continuous Temperature", None),
+        ("CONT_PRESTEMP", 7, "Continuous Pressure & Temperature", None),
+    )
+)
+
 
 class Rate(CV):
     """Options for `pressure_rate` and `temperature_rate`"""
+
     pass
 
-Rate.add_values((
-    ('RATE_1_HZ', 0, 1, None),
-    ('RATE_2_HZ', 1, 2, None),
-    ('RATE_4_HZ', 2, 4, None),
-    ('RATE_8_HZ', 3, 8, None),
-    ('RATE_16_HZ', 4, 16, None),
-    ('RATE_32_HZ', 5, 32, None),
-    ('RATE_64_HZ', 6, 64, None),
-    ('RATE_128_HZ', 7, 128, None)
-))
+
+Rate.add_values(
+    (
+        ("RATE_1_HZ", 0, 1, None),
+        ("RATE_2_HZ", 1, 2, None),
+        ("RATE_4_HZ", 2, 4, None),
+        ("RATE_8_HZ", 3, 8, None),
+        ("RATE_16_HZ", 4, 16, None),
+        ("RATE_32_HZ", 5, 32, None),
+        ("RATE_64_HZ", 6, 64, None),
+        ("RATE_128_HZ", 7, 128, None),
+    )
+)
+
 
 class SampleCount(CV):
     """Options for `temperature_oversample_count` and `pressure_oversample_count`"""
+
     pass
 
-SampleCount.add_values((
-    ('COUNT_1', 0, 1, None),
-    ('COUNT_2', 1, 2, None),
-    ('COUNT_4', 2, 4, None),
-    ('COUNT_8', 3, 8, None),
-    ('COUNT_16', 4, 16, None),
-    ('COUNT_32', 5, 32, None),
-    ('COUNT_64', 6, 64, None),
-    ('COUNT_128', 7, 128, None),
-))
-#pylint: enable=unnecessary-pass
+
+SampleCount.add_values(
+    (
+        ("COUNT_1", 0, 1, None),
+        ("COUNT_2", 1, 2, None),
+        ("COUNT_4", 2, 4, None),
+        ("COUNT_8", 3, 8, None),
+        ("COUNT_16", 4, 16, None),
+        ("COUNT_32", 5, 32, None),
+        ("COUNT_64", 6, 64, None),
+        ("COUNT_128", 7, 128, None),
+    )
+)
+# pylint: enable=unnecessary-pass
 class DPS310:
-    #pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
 
         :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
@@ -205,8 +221,16 @@ class DPS310:
         self._c20 = None
         self._c21 = None
         self._c30 = None
-        self._oversample_scalefactor = (524288, 1572864, 3670016, 7864320, 253952,
-                                        516096, 1040384, 2088960)
+        self._oversample_scalefactor = (
+            524288,
+            1572864,
+            3670016,
+            7864320,
+            253952,
+            516096,
+            1040384,
+            2088960,
+        )
         self.initialize()
 
     def initialize(self):
@@ -251,9 +275,11 @@ class DPS310:
 
         p_red = raw_pressure / self._pressure_scale
 
-
-        pres_calc = (self._c00 + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30)) +
-                     _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21)))
+        pres_calc = (
+            self._c00
+            + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30))
+            + _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21))
+        )
 
         final_pressure = pres_calc / 100
         return final_pressure
@@ -309,7 +335,7 @@ class DPS310:
             raise AttributeError("pressure_oversample_count must be a SampleCount")
 
         self._pressure_osbits = value
-        self._pressure_shiftbit = (value > SampleCount.COUNT_8)
+        self._pressure_shiftbit = value > SampleCount.COUNT_8
         self._pressure_scale = self._oversample_scalefactor[value]
 
     @property
@@ -335,12 +361,12 @@ class DPS310:
 
         self._temp_osbits = value
         self._temp_scale = self._oversample_scalefactor[value]
-        self._temp_shiftbit = (value > SampleCount.COUNT_8)
+        self._temp_shiftbit = value > SampleCount.COUNT_8
 
     @staticmethod
     def _twos_complement(val, bits):
         if val & (1 << (bits - 1)):
-            val -= (1 << bits)
+            val -= 1 << bits
 
         return val
 
@@ -350,7 +376,7 @@ class DPS310:
             sleep(0.001)
 
         buffer = bytearray(19)
-        coeffs = [None]*18
+        coeffs = [None] * 18
         for offset in range(18):
             buffer = bytearray(2)
             buffer[0] = 0x10 + offset
@@ -369,7 +395,7 @@ class DPS310:
         self._c00 = (coeffs[3] << 12) | (coeffs[4] << 4) | ((coeffs[5] >> 4) & 0x0F)
         self._c00 = self._twos_complement(self._c00, 20)
 
-        self._c10 = ((coeffs[5] & 0x0F) << 16) | (coeffs[6] << 8) |coeffs[7]
+        self._c10 = ((coeffs[5] & 0x0F) << 16) | (coeffs[6] << 8) | coeffs[7]
         self._c10 = self._twos_complement(self._c10, 20)
 
         self._c01 = self._twos_complement((coeffs[8] << 8) | coeffs[9], 16)
