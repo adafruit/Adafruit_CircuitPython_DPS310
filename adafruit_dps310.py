@@ -249,9 +249,8 @@ class DPS310:
         self.mode = Mode.CONT_PRESTEMP
 
         # wait until we have at least one good measurement
-
-        while (self._temp_ready is False) or (self._pressure_ready is False):
-            sleep(0.001)
+        self.wait_temperature_ready()
+        self.wait_pressure_ready()
 
     # (https://github.com/Infineon/DPS310-Pressure-Sensor#temperature-measurement-issue)
     # similar to DpsClass::correctTemp(void) from infineon's c++ library
@@ -315,10 +314,18 @@ class DPS310:
         """Returns true if there is a temperature reading ready"""
         return self._temp_ready
 
+    def wait_temperature_ready(self):
+        while (self._temp_ready is False):
+            sleep(0.001)
+
     @property
     def pressure_ready(self):
         """Returns true if pressure readings are ready"""
         return self._pressure_ready
+
+    def wait_pressure_ready(self):
+        while (self._pressure_ready is False):
+            sleep(0.001)
 
     @property
     def mode(self):
