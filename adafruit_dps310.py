@@ -315,8 +315,14 @@ class DPS310:
         return self._temp_ready
 
     def wait_temperature_ready(self):
-        while (self._temp_ready is False):
-            sleep(0.001)
+        """Wait until a temperature measurement is available"""
+        if self._mode_bits == Mode.IDLE \
+                or self._mode_bits == Mode.ONE_PRESSURE \
+                or self._mode_bits == Mode.CONT_PRESSURE:
+            raise RuntimeError("Sensor mode is set to idle or pressure measurement, can't wait for a temperature measurement")
+        else:
+            while (self._temp_ready is False):
+                sleep(0.001)
 
     @property
     def pressure_ready(self):
@@ -324,8 +330,14 @@ class DPS310:
         return self._pressure_ready
 
     def wait_pressure_ready(self):
-        while (self._pressure_ready is False):
-            sleep(0.001)
+        """Wait until a pressure measurement is available"""
+        if self._mode_bits == Mode.IDLE \
+                or self._mode_bits == Mode.ONE_TEMPERATURE \
+                or self._mode_bits == Mode.CONT_TEMP:
+            raise RuntimeError("Sensor mode is set to idle or temperature measurement, can't wait for a pressure measurement")
+        else:
+            while (self._pressure_ready is False):
+                sleep(0.001)
 
     @property
     def mode(self):
