@@ -203,6 +203,10 @@ class DPS310:
 
     _calib_coeff_temp_src_bit = ROBit(_DPS310_TMPCOEFSRCE, 7)
 
+    _reg0E = RWBits(8, 0x0E, 0)
+    _reg0F = RWBits(8, 0x0F, 0)
+    _reg62 = RWBits(8, 0x62, 0)
+
     def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
 
@@ -253,6 +257,21 @@ class DPS310:
         while (self._temp_ready is False) or (self._pressure_ready is False):
             sleep(0.001)
 
+    # (https://github.com/Infineon/DPS310-Pressure-Sensor#temperature-measurement-issue)
+    # similar to DpsClass::correctTemp(void) from infineon's c++ library
+    def _correct_temp(self):
+        """Correct temperature readings on ICs with a fuse bit problem"""
+        self._reg0E = 0xA5
+        self._reg0F = 0x96
+        self._reg62 = 0x02
+        self._reg0E = 0
+        self._reg0F = 0
+
+        # perform a temperature measurement
+        # the most recent temperature will be saved internally
+        # and used for compensation when calculating pressure
+        unused = self._raw_temperature
+
     def _reset(self):
         """Perform a soft-reset on the sensor"""
         self._reset_register = 0x89
@@ -260,6 +279,7 @@ class DPS310:
         sleep(0.010)
         while not self._sensor_ready:
             sleep(0.001)
+        self._correct_temp()
 
     @property
     def pressure(self):
