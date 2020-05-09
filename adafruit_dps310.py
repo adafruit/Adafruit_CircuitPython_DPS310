@@ -238,13 +238,9 @@ class DPS310:
         self.initialize()
 
     def initialize(self):
-        """Reset the sensor to the default state"""
+        """Initialize the sensor to continuous measurement"""
 
-        self._reset()
-        self._read_calibration()
-
-        # make sure we're using the temperature source used for calibration
-        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
+        self.reset()
 
         self.pressure_rate = Rate.RATE_64_HZ
         self.pressure_oversample_count = SampleCount.COUNT_64
@@ -272,14 +268,17 @@ class DPS310:
         # and used for compensation when calculating pressure
         unused = self._raw_temperature
 
-    def _reset(self):
-        """Perform a soft-reset on the sensor"""
+    def reset(self):
+        """Reset the sensor"""
         self._reset_register = 0x89
         # wait for hardware reset to finish
         sleep(0.010)
         while not self._sensor_ready:
             sleep(0.001)
         self._correct_temp()
+        self._read_calibration()
+        # make sure we're using the temperature source used for calibration
+        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
 
     @property
     def pressure(self):
