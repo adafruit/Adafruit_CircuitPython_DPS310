@@ -25,4 +25,3 @@ while True:
     print("Pressure = %.2f hPa" % dps310.pressure)
     print("")
     time.sleep(10.0)
-
