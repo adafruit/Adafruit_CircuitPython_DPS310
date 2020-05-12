@@ -203,8 +203,8 @@ class DPS310:
 
     _calib_coeff_temp_src_bit = ROBit(_DPS310_TMPCOEFSRCE, 7)
 
-    _reg0E = RWBits(8, 0x0E, 0)
-    _reg0F = RWBits(8, 0x0F, 0)
+    _reg0e = RWBits(8, 0x0E, 0)
+    _reg0f = RWBits(8, 0x0F, 0)
     _reg62 = RWBits(8, 0x62, 0)
 
     def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
@@ -256,16 +256,16 @@ class DPS310:
     # similar to DpsClass::correctTemp(void) from infineon's c++ library
     def _correct_temp(self):
         """Correct temperature readings on ICs with a fuse bit problem"""
-        self._reg0E = 0xA5
-        self._reg0F = 0x96
+        self._reg0e = 0xA5
+        self._reg0f = 0x96
         self._reg62 = 0x02
-        self._reg0E = 0
-        self._reg0F = 0
+        self._reg0e = 0
+        self._reg0f = 0
 
         # perform a temperature measurement
         # the most recent temperature will be saved internally
         # and used for compensation when calculating pressure
-        unused = self._raw_temperature
+        _unused = self._raw_temperature
 
     def reset(self):
         """Reset the sensor"""
@@ -319,10 +319,10 @@ class DPS310:
         if self._mode_bits == Mode.IDLE \
                 or self._mode_bits == Mode.ONE_PRESSURE \
                 or self._mode_bits == Mode.CONT_PRESSURE:
-            raise RuntimeError("Sensor mode is set to idle or pressure measurement, can't wait for a temperature measurement")
-        else:
-            while (self._temp_ready is False):
-                sleep(0.001)
+            raise RuntimeError("Sensor mode is set to idle or pressure measurement,\
+                    can't wait for a temperature measurement")
+        while self._temp_ready is False:
+            sleep(0.001)
 
     @property
     def pressure_ready(self):
@@ -334,10 +334,10 @@ class DPS310:
         if self._mode_bits == Mode.IDLE \
                 or self._mode_bits == Mode.ONE_TEMPERATURE \
                 or self._mode_bits == Mode.CONT_TEMP:
-            raise RuntimeError("Sensor mode is set to idle or temperature measurement, can't wait for a pressure measurement")
-        else:
-            while (self._pressure_ready is False):
-                sleep(0.001)
+            raise RuntimeError("Sensor mode is set to idle or temperature measurement,\
+                    can't wait for a pressure measurement")
+        while self._pressure_ready is False:
+            sleep(0.001)
 
     @property
     def mode(self):
