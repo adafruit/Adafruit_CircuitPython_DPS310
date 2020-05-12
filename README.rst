@@ -78,9 +78,9 @@ Caveat: by default the library initializes the IC with constant temperature and 
 .. code-block:: python3
 
     dps310.reset()
-    dps310.pressure_oversample_count = SampleCount.COUNT_2
-    dps310.pressure_rate = Rate.RATE_1_HZ
-    dps310.mode = Mode.CONT_PRESSURE
+    dps310.pressure_oversample_count = adafruit_dps310.SampleCount.COUNT_2
+    dps310.pressure_rate = adafruit_dps310.Rate.RATE_1_HZ
+    dps310.mode = adafruit_dps310.Mode.CONT_PRESSURE
     dps310.wait_pressure_ready()
 
 
