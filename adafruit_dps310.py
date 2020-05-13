@@ -203,6 +203,10 @@ class DPS310:
 
     _calib_coeff_temp_src_bit = ROBit(_DPS310_TMPCOEFSRCE, 7)
 
+    _reg0e = RWBits(8, 0x0E, 0)
+    _reg0f = RWBits(8, 0x0F, 0)
+    _reg62 = RWBits(8, 0x62, 0)
+
     def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
 
@@ -234,13 +238,9 @@ class DPS310:
         self.initialize()
 
     def initialize(self):
-        """Reset the sensor to the default state"""
+        """Initialize the sensor to continuous measurement"""
 
-        self._reset()
-        self._read_calibration()
-
-        # make sure we're using the temperature source used for calibration
-        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
+        self.reset()
 
         self.pressure_rate = Rate.RATE_64_HZ
         self.pressure_oversample_count = SampleCount.COUNT_64
@@ -249,17 +249,35 @@ class DPS310:
         self.mode = Mode.CONT_PRESTEMP
 
         # wait until we have at least one good measurement
+        self.wait_temperature_ready()
+        self.wait_pressure_ready()
 
-        while (self._temp_ready is False) or (self._pressure_ready is False):
-            sleep(0.001)
+    # (https://github.com/Infineon/DPS310-Pressure-Sensor#temperature-measurement-issue)
+    # similar to DpsClass::correctTemp(void) from infineon's c++ library
+    def _correct_temp(self):
+        """Correct temperature readings on ICs with a fuse bit problem"""
+        self._reg0e = 0xA5
+        self._reg0f = 0x96
+        self._reg62 = 0x02
+        self._reg0e = 0
+        self._reg0f = 0
 
-    def _reset(self):
-        """Perform a soft-reset on the sensor"""
+        # perform a temperature measurement
+        # the most recent temperature will be saved internally
+        # and used for compensation when calculating pressure
+        _unused = self._raw_temperature
+
+    def reset(self):
+        """Reset the sensor"""
         self._reset_register = 0x89
         # wait for hardware reset to finish
         sleep(0.010)
         while not self._sensor_ready:
             sleep(0.001)
+        self._correct_temp()
+        self._read_calibration()
+        # make sure we're using the temperature source used for calibration
+        self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
 
     @property
     def pressure(self):
@@ -296,10 +314,50 @@ class DPS310:
         """Returns true if there is a temperature reading ready"""
         return self._temp_ready
 
+    def wait_temperature_ready(self):
+        """Wait until a temperature measurement is available.
+
+        To avoid waiting indefinitely this function raises an
+        error if the sensor isn't configured for temperate measurements,
+        ie. ``Mode.ONE_TEMPERATURE``, ``Mode.CONT_TEMP`` or ``Mode.CONT_PRESTEMP``.
+        See the `Mode` documentation for details.
+        """
+        if (
+            self._mode_bits == Mode.IDLE
+            or self._mode_bits == Mode.ONE_PRESSURE
+            or self._mode_bits == Mode.CONT_PRESSURE
+        ):
+            raise RuntimeError(
+                "Sensor mode is set to idle or pressure measurement,\
+                    can't wait for a temperature measurement"
+            )
+        while self._temp_ready is False:
+            sleep(0.001)
+
     @property
     def pressure_ready(self):
         """Returns true if pressure readings are ready"""
         return self._pressure_ready
+
+    def wait_pressure_ready(self):
+        """Wait until a pressure measurement is available
+
+        To avoid waiting indefinitely this function raises an
+        error if the sensor isn't configured for pressure measurements,
+        ie.  ``Mode.ONE_PRESSURE``, ``Mode.CONT_PRESSURE`` or ``Mode.CONT_PRESTEMP``
+        See the `Mode` documentation for details.
+        """
+        if (
+            self._mode_bits == Mode.IDLE
+            or self._mode_bits == Mode.ONE_TEMPERATURE
+            or self._mode_bits == Mode.CONT_TEMP
+        ):
+            raise RuntimeError(
+                "Sensor mode is set to idle or temperature measurement,\
+                    can't wait for a pressure measurement"
+            )
+        while self._pressure_ready is False:
+            sleep(0.001)
 
     @property
     def mode(self):
