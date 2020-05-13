@@ -319,7 +319,7 @@ class DPS310:
 
         To avoid waiting indefinitely this function raises an
         error if the sensor isn't configured for temperate measurements,
-        ie. `Mode.ONE_TEMPERATURE`, `Mode.CONT_TEMP` or `Mode.CONT_PRESTEMP`.
+        ie. ``Mode.ONE_TEMPERATURE``, ``Mode.CONT_TEMP`` or ``Mode.CONT_PRESTEMP``.
         See the `Mode` documentation for details.
         """
         if (
@@ -344,7 +344,7 @@ class DPS310:
 
         To avoid waiting indefinitely this function raises an
         error if the sensor isn't configured for pressure measurements,
-        ie.  `Mode.ONE_PRESSURE`, `Mode.CONT_PRESSURE` or `Mode.CONT_PRESTEMP`
+        ie.  ``Mode.ONE_PRESSURE``, ``Mode.CONT_PRESSURE`` or ``Mode.CONT_PRESTEMP``
         See the `Mode` documentation for details.
         """
         if (
