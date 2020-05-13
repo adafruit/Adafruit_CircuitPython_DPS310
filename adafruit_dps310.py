@@ -315,7 +315,13 @@ class DPS310:
         return self._temp_ready
 
     def wait_temperature_ready(self):
-        """Wait until a temperature measurement is available"""
+        """Wait until a temperature measurement is available.
+
+        To avoid waiting indefinitely this function raises an
+        error if the sensor isn't configured for temperate measurements,
+        ie. `Mode.ONE_TEMPERATURE`, `Mode.CONT_TEMP` or `Mode.CONT_PRESTEMP`.
+        See the `Mode` documentation for details.
+        """
         if (
             self._mode_bits == Mode.IDLE
             or self._mode_bits == Mode.ONE_PRESSURE
@@ -334,7 +340,13 @@ class DPS310:
         return self._pressure_ready
 
     def wait_pressure_ready(self):
-        """Wait until a pressure measurement is available"""
+        """Wait until a pressure measurement is available
+
+        To avoid waiting indefinitely this function raises an
+        error if the sensor isn't configured for pressure measurements,
+        ie.  `Mode.ONE_PRESSURE`, `Mode.CONT_PRESSURE` or `Mode.CONT_PRESTEMP`
+        See the `Mode` documentation for details.
+        """
         if (
             self._mode_bits == Mode.IDLE
             or self._mode_bits == Mode.ONE_TEMPERATURE
