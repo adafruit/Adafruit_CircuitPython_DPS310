@@ -1,6 +1,9 @@
-# configure the sensor for continuous measurement for a
-# low power weather station as recommended in the datasheet:
-# https://www.infineon.com/dgdl/Infineon-DPS310-DS-v01_00-EN.pdf)
+"""
+Configure the sensor for continuous measurement with rates,
+sampling counts and mode optmized for low power, as recommended
+in Infineon's datasheet:
+https://www.infineon.com/dgdl/Infineon-DPS310-DS-v01_00-EN.pdf
+"""
 
 # (disable pylint warnings for adafruit_dps310.{SampleCount,Rate,Mode}.*
 # as they are generated dynamically)
