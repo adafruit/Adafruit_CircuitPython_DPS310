@@ -64,7 +64,6 @@ _DPS310_RESET = 0x0C  # Soft reset
 _DPS310_PRODREVID = 0x0D  # Register that contains the part ID
 _DPS310_TMPCOEFSRCE = 0x28  # Temperature calibration src
 
-# pylint: enable=bad-whitespace
 # pylint: disable=no-member,unnecessary-pass
 
 
