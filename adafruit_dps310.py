@@ -308,8 +308,7 @@ class DPS310:
     def altitude(self):
         """The altitude based on the sea level pressure (`sea_level_pressure`) - which you must
            enter ahead of time)"""
-        p = self.pressure  # in Si units for hPascal
-        return 44330 * (1.0 - math.pow(p / self.sea_level_pressure, 0.1903))
+        return 44330 * (1.0 - math.pow(self.pressure / self.sea_level_pressure, 0.1903))
 
     @property
     def temperature(self):
