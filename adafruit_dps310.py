@@ -45,6 +45,7 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 
 # Common imports; remove if unused or pylint will complain
+import math
 from time import sleep
 import adafruit_bus_device.i2c_device as i2c_device
 from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
@@ -234,6 +235,8 @@ class DPS310:
             1040384,
             2088960,
         )
+        self.sea_level_pressure = 1013.25
+        """Pressure in hectoPascals at sea level. Used to calibrate `altitude`."""
         self.initialize()
 
     def initialize(self):
@@ -300,6 +303,12 @@ class DPS310:
 
         final_pressure = pres_calc / 100
         return final_pressure
+
+    @property
+    def altitude(self):
+        """The altitude based on the sea level pressure (`sea_level_pressure`) - which you must
+           enter ahead of time)"""
+        return 44330 * (1.0 - math.pow(self.pressure / self.sea_level_pressure, 0.1903))
 
     @property
     def temperature(self):
