@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 """
 Configure the sensor for continuous measurement with rates,
 sampling counts and mode optmized for low power, as recommended
