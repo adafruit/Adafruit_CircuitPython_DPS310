@@ -14,10 +14,9 @@ https://www.infineon.com/dgdl/Infineon-DPS310-DS-v01_00-EN.pdf
 
 import time
 import board
-import busio
 import adafruit_dps310
 
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = board.I2C()  # uses board.SCL and board.SDA
 
 dps310 = adafruit_dps310.DPS310(i2c)
 

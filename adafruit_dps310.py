@@ -114,7 +114,7 @@ Mode.add_values(
 
 
 class Rate(CV):
-    """Options for `pressure_rate` and `temperature_rate`"""
+    """Options for :attr:`pressure_rate` and :attr:`temperature_rate`"""
 
     pass
 
@@ -134,7 +134,7 @@ Rate.add_values(
 
 
 class SampleCount(CV):
-    """Options for `temperature_oversample_count` and `pressure_oversample_count`"""
+    """Options for :attr:`temperature_oversample_count` and :attr:`pressure_oversample_count`"""
 
     pass
 
@@ -157,7 +157,31 @@ class DPS310:
     """Library for the DPS310 Precision Barometric Pressure Sensor.
 
     :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
-    :param address: The I2C slave address of the sensor
+    :param int address: The I2C device address. Defaults to :const:`0x77`
+
+    **Quickstart: Importing and using the DPS310**
+
+        Here is an example of using the :class:`DPS310` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            import adafruit_dps310
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()   # uses board.SCL and board.SDA
+            dps310 = adafruit_dps310.DPS310(i2c)
+
+        Now you have access to the :attr:`temperature` and :attr:`pressure` attributes.
+
+        .. code-block:: python
+
+            temperature = dps310.temperature
+            pressure = dps310.pressure
 
     """
     # Register definitions
@@ -219,7 +243,7 @@ class DPS310:
             2088960,
         )
         self.sea_level_pressure = 1013.25
-        """Pressure in hectoPascals at sea level. Used to calibrate `altitude`."""
+        """Pressure in hectoPascals at sea level. Used to calibrate :attr:`altitude`."""
         self.initialize()
 
     def initialize(self):
@@ -289,13 +313,13 @@ class DPS310:
 
     @property
     def altitude(self):
-        """The altitude based on the sea level pressure (`sea_level_pressure`) - which you must
-        enter ahead of time)"""
+        """The altitude based on the sea level pressure (:attr:`sea_level_pressure`) -
+        which you must enter ahead of time)"""
         return 44330 * (1.0 - math.pow(self.pressure / self.sea_level_pressure, 0.1903))
 
     @property
     def temperature(self):
-        """The current temperature reading in degrees C"""
+        """The current temperature reading in degrees Celsius"""
         _scaled_rawtemp = self._raw_temperature / self._temp_scale
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
         return _temperature
@@ -375,7 +399,7 @@ class DPS310:
 
     @property
     def pressure_oversample_count(self):
-        """The number of samples taken per pressure measurement. Must be a `SampleCount`"""
+        """The number of samples taken per pressure measurement. Must be a ``SampleCount``"""
         return self._pressure_osbits
 
     @pressure_oversample_count.setter
@@ -400,7 +424,7 @@ class DPS310:
 
     @property
     def temperature_oversample_count(self):
-        """The number of samples taken per temperature measurement. Must be a `SampleCount`"""
+        """The number of samples taken per temperature measurement. Must be a ``SampleCount``"""
         return self._temp_osbits
 
     @temperature_oversample_count.setter
