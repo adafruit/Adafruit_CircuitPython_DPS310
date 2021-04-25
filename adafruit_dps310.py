@@ -157,7 +157,7 @@ class DPS310:
     """Library for the DPS310 Precision Barometric Pressure Sensor.
 
     :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
-    :param int address: The I2C slave address of the sensor. Defaults to :const:`0x77`
+    :param int address: The I2C device address. Defaults to :const:`0x77`
 
     **Quickstart: Importing and using the DPS310**
 
