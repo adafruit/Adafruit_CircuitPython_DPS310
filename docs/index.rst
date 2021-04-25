@@ -23,10 +23,12 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
+    Adafruit DPS310 Precision Barometric Pressure / Altitude Sensor Learning Guide <https://learn.adafruit.com/adafruit-dps310-precision-barometric-pressure-sensor/python-circuitpython>
 
 .. toctree::
     :caption: Related Products
 
+    Adafruit DPS310 Precision Barometric Pressure / Altitude Sensor <https://www.adafruit.com/product/4494>
 
 .. toctree::
     :caption: Other Links
