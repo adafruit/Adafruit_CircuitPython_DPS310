@@ -15,14 +15,21 @@ Implementation Notes
 
 **Hardware:**
 
-* Adafruit's DPS310 Breakout: https://www.adafruit.com/product/4494
+* `Adafruit DPS310 Precision Barometric Pressure / Altitude Sensor
+  https://www.adafruit.com/product/4494`_ (Product ID: 4494)
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
   https://circuitpython.org/downloads
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
-* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register"""
+
+* Adafruit's Bus Device library:
+  https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+
+* Adafruit's Register library:
+  https://github.com/adafruit/Adafruit_CircuitPython_Register
+
+"""
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
