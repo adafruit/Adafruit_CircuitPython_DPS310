@@ -16,7 +16,7 @@ Implementation Notes
 **Hardware:**
 
 * `Adafruit DPS310 Precision Barometric Pressure / Altitude Sensor
-  https://www.adafruit.com/product/4494`_ (Product ID: 4494)
+  <https://www.adafruit.com/product/4494>`_ (Product ID: 4494)
 
 **Software and Dependencies:**
 

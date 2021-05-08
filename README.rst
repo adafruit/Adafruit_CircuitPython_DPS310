@@ -83,6 +83,13 @@ Caveat: by default the library initializes the IC with constant temperature and 
     dps310.wait_pressure_ready()
 
 
+
+Known Issues
+============
+Library extensive features might not be compatible with memory limited boards. Library might not
+load in M0 boards.
+
+
 Contributing
 ============
 
