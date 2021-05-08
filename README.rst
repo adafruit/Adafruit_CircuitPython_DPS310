@@ -87,7 +87,7 @@ Caveat: by default the library initializes the IC with constant temperature and 
 Known Issues
 ============
 Library extensive features might not be compatible with memory limited boards. Library might not
-load in SAMD21 boards and others with 32KB or RAM or less.
+load in SAMD21 boards and others with 32KB of RAM or less.
 
 
 Contributing
