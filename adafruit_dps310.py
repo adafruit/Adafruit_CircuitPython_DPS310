@@ -35,129 +35,32 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 
 # Common imports; remove if unused or pylint will complain
-import math
+
 from time import sleep
+import gc
+from micropython import const
 import adafruit_bus_device.i2c_device as i2c_device
 from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
 from adafruit_register.i2c_bit import RWBit, ROBit
 from adafruit_register.i2c_bits import RWBits, ROBits
 
-_DPS310_DEFAULT_ADDRESS = 0x77  # DPS310 default i2c address
-_DPS310_DEVICE_ID = 0x10  # DPS310 device identifier
 
-_DPS310_PRSB2 = 0x00  # Highest byte of pressure data
-_DPS310_TMPB2 = 0x03  # Highest byte of temperature data
-_DPS310_PRSCFG = 0x06  # Pressure configuration
-_DPS310_TMPCFG = 0x07  # Temperature configuration
-_DPS310_MEASCFG = 0x08  # Sensor configuration
-_DPS310_CFGREG = 0x09  # Interrupt/FIFO configuration
-_DPS310_RESET = 0x0C  # Soft reset
-_DPS310_PRODREVID = 0x0D  # Register that contains the part ID
-_DPS310_TMPCOEFSRCE = 0x28  # Temperature calibration src
+_DPS310_PRSB2 = const(0x00)  # Highest byte of pressure data
+_DPS310_TMPB2 = const(0x03)  # Highest byte of temperature data
+_DPS310_PRSCFG = const(0x06)  # Pressure configuration
+_DPS310_TMPCFG = const(0x07)  # Temperature configuration
+_DPS310_MEASCFG = const(0x08)  # Sensor configuration
+_DPS310_CFGREG = const(0x09)  # Interrupt/FIFO configuration
+_DPS310_RESET = const(0x0C)  # Soft reset
+_DPS310_PRODREVID = const(0x0D)  # Register that contains the part ID
+_DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 
 # pylint: disable=no-member,unnecessary-pass
 
-
-class CV:
-    """struct helper"""
-
-    @classmethod
-    def add_values(cls, value_tuples):
-        """Add CV values to the class"""
-        cls.string = {}
-        cls.lsb = {}
-
-        for value_tuple in value_tuples:
-            name, value, string, lsb = value_tuple
-            setattr(cls, name, value)
-            cls.string[value] = string
-            cls.lsb[value] = lsb
-
-    @classmethod
-    def is_valid(cls, value):
-        """Validate that a given value is a member"""
-        return value in cls.string
+RATES = (1, 2, 4, 8, 16, 32, 64, 128)
+MODE = (0, 1, 2, 5, 6, 7)
 
 
-class Mode(CV):
-    """Options for ``mode``
-
-    +--------------------------+------------------------------------------------------------------+
-    | Mode                     | Description                                                      |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.IDLE``            | Puts the sensor into a shutdown state                            |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.ONE_PRESSURE``    | Setting `mode` to ``Mode.ONE_PRESSURE`` takes a single pressure  |
-    |                          | measurement then switches to ``Mode.IDLE``                       |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.ONE_TEMPERATURE`` | Setting `mode` to ``Mode.ONE_TEMPERATURE`` takes a single        |
-    |                          | temperature measurement then switches to ``Mode.IDLE``           |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.CONT_PRESSURE``   | Take pressure measurements at the current `pressure_rate`.       |
-    |                          | `temperature` will not be updated                                |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.CONT_TEMP``       | Take temperature measurements at the current `temperature_rate`. |
-    |                          | `pressure` will not be updated                                   |
-    +--------------------------+------------------------------------------------------------------+
-    | ``Mode.CONT_PRESTEMP``   | Take temperature and pressure measurements at the current        |
-    |                          | `pressure_rate` and `temperature_rate`                           |
-    +--------------------------+------------------------------------------------------------------+
-
-    """
-
-    pass  # pylint: disable=unnecessary-pass
-
-
-Mode.add_values(
-    (
-        ("IDLE", 0, "Idle", None),
-        ("ONE_PRESSURE", 1, "One-Shot Pressure", None),
-        ("ONE_TEMPERATURE", 2, "One-Shot Temperature", None),
-        ("CONT_PRESSURE", 5, "Continuous Pressure", None),
-        ("CONT_TEMP", 6, "Continuous Temperature", None),
-        ("CONT_PRESTEMP", 7, "Continuous Pressure & Temperature", None),
-    )
-)
-
-
-class Rate(CV):
-    """Options for :attr:`pressure_rate` and :attr:`temperature_rate`"""
-
-    pass
-
-
-Rate.add_values(
-    (
-        ("RATE_1_HZ", 0, 1, None),
-        ("RATE_2_HZ", 1, 2, None),
-        ("RATE_4_HZ", 2, 4, None),
-        ("RATE_8_HZ", 3, 8, None),
-        ("RATE_16_HZ", 4, 16, None),
-        ("RATE_32_HZ", 5, 32, None),
-        ("RATE_64_HZ", 6, 64, None),
-        ("RATE_128_HZ", 7, 128, None),
-    )
-)
-
-
-class SampleCount(CV):
-    """Options for :attr:`temperature_oversample_count` and :attr:`pressure_oversample_count`"""
-
-    pass
-
-
-SampleCount.add_values(
-    (
-        ("COUNT_1", 0, 1, None),
-        ("COUNT_2", 1, 2, None),
-        ("COUNT_4", 2, 4, None),
-        ("COUNT_8", 3, 8, None),
-        ("COUNT_16", 4, 16, None),
-        ("COUNT_32", 5, 32, None),
-        ("COUNT_64", 6, 64, None),
-        ("COUNT_128", 7, 128, None),
-    )
-)
 # pylint: enable=unnecessary-pass
 class DPS310:
     # pylint: disable=too-many-instance-attributes
@@ -194,13 +97,11 @@ class DPS310:
     # Register definitions
     _device_id = ROUnaryStruct(_DPS310_PRODREVID, ">B")
     _reset_register = UnaryStruct(_DPS310_RESET, ">B")
+
     _mode_bits = RWBits(3, _DPS310_MEASCFG, 0)
 
     _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
     _pressure_osbits = RWBits(4, _DPS310_PRSCFG, 0)
-
-    _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
-    _temp_osbits = RWBits(4, _DPS310_TMPCFG, 0)
 
     _temp_measurement_src_bit = RWBit(_DPS310_TMPCFG, 7)
 
@@ -221,11 +122,12 @@ class DPS310:
     _reg0f = RWBits(8, 0x0F, 0)
     _reg62 = RWBits(8, 0x62, 0)
 
-    def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
+    def __init__(self, i2c_bus, address=const(0x77)):
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
 
-        if self._device_id != _DPS310_DEVICE_ID:
+        if self._device_id != const(0x10):
             raise RuntimeError("Failed to find DPS310 - check your wiring!")
+        self._buf = bytearray(3)
         self._pressure_scale = None
         self._temp_scale = None
         self._c0 = None
@@ -239,30 +141,31 @@ class DPS310:
         self._c20 = None
         self._c21 = None
         self._c30 = None
-        self._oversample_scalefactor = (
-            524288,
-            1572864,
-            3670016,
-            7864320,
-            253952,
-            516096,
-            1040384,
-            2088960,
-        )
+        self._oversample_scalefactor = {
+            1: 524288,
+            2: 1572864,
+            4: 3670016,
+            8: 7864320,
+            16: 253952,
+            32: 516096,
+            64: 1040384,
+            128: 2088960,
+        }
         self.sea_level_pressure = 1013.25
         """Pressure in hectoPascals at sea level. Used to calibrate :attr:`altitude`."""
         self.initialize()
+        gc.collect()
 
     def initialize(self):
         """Initialize the sensor to continuous measurement"""
 
         self.reset()
 
-        self.pressure_rate = Rate.RATE_64_HZ
-        self.pressure_oversample_count = SampleCount.COUNT_64
-        self.temperature_rate = Rate.RATE_64_HZ
-        self.temperature_oversample_count = SampleCount.COUNT_64
-        self.mode = Mode.CONT_PRESTEMP
+        self.pressure_rate = 64
+        self.pressure_oversample_count = 64
+        self.temperature_rate = 64
+        self.temperature_oversample_count = 64
+        self.mode = 7
 
         # wait until we have at least one good measurement
         self.wait_temperature_ready()
@@ -322,7 +225,7 @@ class DPS310:
     def altitude(self):
         """The altitude based on the sea level pressure (:attr:`sea_level_pressure`) -
         which you must enter ahead of time)"""
-        return 44330 * (1.0 - math.pow(self.pressure / self.sea_level_pressure, 0.1903))
+        return 44330 * (1.0 - pow(self.pressure / self.sea_level_pressure, 0.1903))
 
     @property
     def temperature(self):
@@ -342,13 +245,9 @@ class DPS310:
         To avoid waiting indefinitely this function raises an
         error if the sensor isn't configured for temperate measurements,
         ie. ``Mode.ONE_TEMPERATURE``, ``Mode.CONT_TEMP`` or ``Mode.CONT_PRESTEMP``.
-        See the `Mode` documentation for details.
+        See the ``Mode`` documentation for details.
         """
-        if (
-            self._mode_bits == Mode.IDLE
-            or self._mode_bits == Mode.ONE_PRESSURE
-            or self._mode_bits == Mode.CONT_PRESSURE
-        ):
+        if self._mode_bits == 0 or self._mode_bits == 1 or self._mode_bits == 5:
             raise RuntimeError(
                 "Sensor mode is set to idle or pressure measurement,\
                     can't wait for a temperature measurement"
@@ -367,13 +266,9 @@ class DPS310:
         To avoid waiting indefinitely this function raises an
         error if the sensor isn't configured for pressure measurements,
         ie.  ``Mode.ONE_PRESSURE``, ``Mode.CONT_PRESSURE`` or ``Mode.CONT_PRESTEMP``
-        See the `Mode` documentation for details.
+        See the ``Mode`` documentation for details.
         """
-        if (
-            self._mode_bits == Mode.IDLE
-            or self._mode_bits == Mode.ONE_TEMPERATURE
-            or self._mode_bits == Mode.CONT_TEMP
-        ):
+        if self._mode_bits == 0 or self._mode_bits == 2 or self._mode_bits == 6:
             raise RuntimeError(
                 "Sensor mode is set to idle or temperature measurement,\
                     can't wait for a pressure measurement"
@@ -383,24 +278,24 @@ class DPS310:
 
     @property
     def mode(self):
-        """The measurement mode. Must be a `Mode`. See the `Mode` documentation for details"""
+        """The measurement mode. Must be a ``Mode``. See the ```Mode`` documentation for details"""
         return self._mode_bits
 
     @mode.setter
     def mode(self, value):
-        if not Mode.is_valid(value):
+        if value not in MODE:
             raise AttributeError("mode must be an `Mode`")
 
         self._mode_bits = value
 
     @property
     def pressure_rate(self):
-        """Configure the pressure measurement rate. Must be a `Rate`"""
+        """Configure the pressure measurement rate. Must be a ``Rate``"""
         return self._pressure_ratebits
 
     @pressure_rate.setter
     def pressure_rate(self, value):
-        if not Rate.is_valid(value):
+        if value not in RATES:
             raise AttributeError("pressure_rate must be a Rate")
         self._pressure_ratebits = value
 
@@ -411,37 +306,60 @@ class DPS310:
 
     @pressure_oversample_count.setter
     def pressure_oversample_count(self, value):
-        if not SampleCount.is_valid(value):
+        if value not in RATES:
             raise AttributeError("pressure_oversample_count must be a SampleCount")
-
         self._pressure_osbits = value
-        self._pressure_shiftbit = value > SampleCount.COUNT_8
+        self._pressure_shiftbit = value > 8
         self._pressure_scale = self._oversample_scalefactor[value]
+
+    def _read_register(self, address):
+        """Return 8 bit value of register at address."""
+        self._buf[0] = address
+        with self.i2c_device as i2c:
+            i2c.write_then_readinto(self._buf, self._buf, out_end=1, in_start=1)
+        return self._buf[1]
+
+    def _write_register(self, address, value):
+        """Write 8 bit value to register at address."""
+        self._buf[0] = address
+        self._buf[1] = value
+        with self.i2c_device as i2c:
+            i2c.write(self._buf)
 
     @property
     def temperature_rate(self):
-        """Configure the temperature measurement rate. Must be a `Rate`"""
-        return self._temp_ratebits
+        """Configure the temperature measurement rate. Must be a ``Rate``"""
+        register = self._read_register(_DPS310_TMPCFG)
+        return RATES[(register & 0x70) >> 4]
 
     @temperature_rate.setter
     def temperature_rate(self, value):
-        if not Rate.is_valid(value):
+        if value not in RATES:
             raise AttributeError("temperature_rate must be a Rate")
-        self._temp_ratebits = value
+        register = self._read_register(_DPS310_TMPCFG)
+        register = register & 0x8F
+        rate = RATES.index(value)
+        temp_rate = register | rate << 4
+        self._write_register(_DPS310_TMPCFG, temp_rate)
 
     @property
     def temperature_oversample_count(self):
         """The number of samples taken per temperature measurement. Must be a ``SampleCount``"""
-        return self._temp_osbits
+        register = self._read_register(_DPS310_TMPCFG)
+        return RATES[(register & 0x0F)]
 
     @temperature_oversample_count.setter
     def temperature_oversample_count(self, value):
-        if not SampleCount.is_valid(value):
+        if value not in RATES:
             raise AttributeError("temperature_oversample_count must be a SampleCount")
 
-        self._temp_osbits = value
+        register = self._read_register(_DPS310_TMPCFG)
+        register = register & 0xF8
+        rate = RATES.index(value)
+        temp_oversample = register | rate
+        self._write_register(_DPS310_TMPCFG, temp_oversample)
         self._temp_scale = self._oversample_scalefactor[value]
-        self._temp_shiftbit = value > SampleCount.COUNT_8
+        self._temp_shiftbit = value > 8
 
     @staticmethod
     def _twos_complement(val, bits):
