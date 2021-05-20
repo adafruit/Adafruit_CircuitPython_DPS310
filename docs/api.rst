@@ -6,4 +6,10 @@
 
 .. automodule:: adafruit_dps310
    :members:
+
+.. automodule:: adafruit_dps310.dps310_basic
+   :members:
+
+.. automodule:: adafruit_dps310.dps310_configurable
+   :members:
    :exclude-members: CV, SampleCount

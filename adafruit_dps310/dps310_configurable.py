@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-`adafruit_dps310.dps310_featured`
+`adafruit_dps310.dps310_configurable`
 ================================================================================
 
 Library for the DPS310 Precision Barometric Pressure Sensor
@@ -37,7 +37,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 from time import sleep
 from micropython import const
 from adafruit_register.i2c_bits import RWBits
-from adafruit_dps310 import DPS310
+from adafruit_dps310.dps310_basic import DPS310
 
 # pylint: disable=no-member,unnecessary-pass
 
@@ -158,7 +158,7 @@ _DPS310_PRODREVID = const(0x0D)  # Register that contains the part ID
 _DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 
 
-class DPS310_Featured(DPS310):
+class DPS310_Configurable(DPS310):
     # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
     This class contains all the options available for the Sensor

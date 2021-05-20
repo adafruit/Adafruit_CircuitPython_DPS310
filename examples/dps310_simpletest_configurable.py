@@ -3,10 +3,10 @@
 
 import time
 import board
-from adafruit_dps310.dps310_basic import DPS310
+from adafruit_dps310.dps310_configurable import DPS310_Configurable
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
-dps310 = DPS310(i2c)
+dps310 = DPS310_Configurable(i2c)
 
 while True:
     print("Temperature = %.2f *C" % dps310.temperature)
