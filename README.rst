@@ -60,11 +60,11 @@ Usage Example
 
     import time
     import board
-    import adafruit_dps310
+    from adafruit_dps310.dps310 import DPS310
 
     i2c = board.I2C()   # uses board.SCL and board.SDA
 
-    dps310 = adafruit_dps310.DPS310(i2c)
+    dps310 = DPS310(i2c)
 
     while True:
         print("Temperature = %.2f *C"%dps310.temperature)
@@ -74,20 +74,12 @@ Usage Example
 
 Caveat: by default the library initializes the IC with constant temperature and pressure measurements at 64Hz with 64 samples. It is not possible to change the IC's mode, temperature_oversample_count or pressure_oversample_count on-the-fly so resetting the IC and operation parameteres is required. For instance, to set the mode to continuous pressure measurement at 1Hz with 2 samples:
 
-.. code-block:: python3
-
-    dps310.reset()
-    dps310.pressure_oversample_count = adafruit_dps310.SampleCount.COUNT_2
-    dps310.pressure_rate = adafruit_dps310.Rate.RATE_1_HZ
-    dps310.mode = adafruit_dps310.Mode.CONT_PRESSURE
-    dps310.wait_pressure_ready()
-
-
 
 Known Issues
 ============
-Library extensive features might not be compatible with memory limited boards. Library might not
-load in SAMD21 boards and others with 32KB of RAM or less.
+Library extensive features might not be compatible with memory limited boards.
+For boards with more memory avalaible you could use the code present
+in ``dps310_advanced.py``. For usage refer to ``dps310_simpletest_advanced.py``
 
 
 Contributing

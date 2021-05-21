@@ -1,12 +1,12 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-FileCopyrightText: 2021 Jose David M.
 # SPDX-License-Identifier: MIT
 
 import time
 import board
-from adafruit_dps310.dps310_configurable import DPS310_Configurable
+from adafruit_dps310.dps310_advanced import DPS310_Advanced as DPS310
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
-dps310 = DPS310_Configurable(i2c)
+dps310 = DPS310(i2c)
 
 while True:
     print("Temperature = %.2f *C" % dps310.temperature)

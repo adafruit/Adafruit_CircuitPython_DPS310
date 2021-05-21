@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 """
-`adafruit_dps310.dps310_configurable`
+`adafruit_dps310.dps310_advanced`
 ================================================================================
 
-Library for the DPS310 Precision Barometric Pressure Sensor
+Library for the DPS310 Precision Barometric Pressure Sensor. This is the advanced
+version. Includes some features not present in `adafruit_dps310.dps310`
 
-* Author(s): Bryan Siepert
+* Author(s): Bryan Siepert, Jose David M.
 
 Implementation Notes
 --------------------
@@ -37,7 +38,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 from time import sleep
 from micropython import const
 from adafruit_register.i2c_bits import RWBits
-from adafruit_dps310.dps310_basic import DPS310
+from adafruit_dps310.dps310 import DPS310
 
 # pylint: disable=no-member,unnecessary-pass
 
@@ -158,10 +159,37 @@ _DPS310_PRODREVID = const(0x0D)  # Register that contains the part ID
 _DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 
 
-class DPS310_Configurable(DPS310):
+class DPS310_Advanced(DPS310):
     # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
-    This class contains all the options available for the Sensor
+    This class contains some of other configurable features
+
+    :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
+    :param int address: The I2C device address. Defaults to :const:`0x77`
+
+    **Quickstart: Importing and using the DPS310**
+
+        Here is an example of using the :class:`DPS310_Advanced` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            from adafruit_dps310.dps310_advanced import DPS310_Advanced as DPS310
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()   # uses board.SCL and board.SDA
+            dps310 = DPS310(i2c)
+
+        Now you have access to the :attr:`temperature` and :attr:`pressure` attributes.
+
+        .. code-block:: python
+
+            temperature = dps310.temperature
+            pressure = dps310.pressure
 
     """
     # Register definitions
