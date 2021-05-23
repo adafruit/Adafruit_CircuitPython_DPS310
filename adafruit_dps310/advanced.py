@@ -7,7 +7,7 @@
 ================================================================================
 
 Library for the DPS310 Precision Barometric Pressure Sensor. This is the advanced
-version. Includes some features not present in `adafruit_dps310.dps310`
+version. Includes some features not present in `adafruit_dps310.basic`
 
 * Author(s): Bryan Siepert, Jose David M.
 
