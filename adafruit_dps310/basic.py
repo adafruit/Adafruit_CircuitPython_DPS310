@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-`adafruit_dps310.dps310`
+`adafruit_dps310.basic`
 ================================================================================
 
 Library for the DPS310 Precision Barometric Pressure Sensor

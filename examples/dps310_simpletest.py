@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
-from adafruit_dps310.dps310 import DPS310
+from adafruit_dps310.basic import DPS310
 import time
 import board
 

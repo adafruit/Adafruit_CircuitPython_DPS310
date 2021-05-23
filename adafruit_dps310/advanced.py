@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-`adafruit_dps310.dps310_advanced`
+`adafruit_dps310.advanced`
 ================================================================================
 
 Library for the DPS310 Precision Barometric Pressure Sensor. This is the advanced
@@ -38,7 +38,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 from time import sleep
 from micropython import const
 from adafruit_register.i2c_bits import RWBits
-from adafruit_dps310.dps310 import DPS310
+from adafruit_dps310.basic import DPS310
 
 # pylint: disable=no-member,unnecessary-pass
 

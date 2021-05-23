@@ -14,17 +14,17 @@ https://www.infineon.com/dgdl/Infineon-DPS310-DS-v01_00-EN.pdf
 
 import time
 import board
-from adafruit_dps310 import dps310_advanced
+from adafruit_dps310 import advanced
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
-dps310 = dps310_advanced.DPS310_Advanced(i2c)
+dps310 = advanced.DPS310_Advanced(i2c)
 
 dps310.reset()
-dps310.pressure_oversample_count = dps310_advanced.SampleCount.COUNT_2
-dps310.pressure_rate = dps310_advanced.Rate.RATE_1_HZ
-dps310.temperature_oversample_count = dps310_advanced.SampleCount.COUNT_16
-dps310.temperature_rate = dps310_advanced.Rate.RATE_1_HZ
-dps310.mode = dps310_advanced.Mode.CONT_PRESTEMP
+dps310.pressure_oversample_count = advanced.SampleCount.COUNT_2
+dps310.pressure_rate = advanced.Rate.RATE_1_HZ
+dps310.temperature_oversample_count = advanced.SampleCount.COUNT_16
+dps310.temperature_rate = advanced.Rate.RATE_1_HZ
+dps310.mode = advanced.Mode.CONT_PRESTEMP
 dps310.wait_temperature_ready()
 dps310.wait_pressure_ready()
 
