@@ -297,7 +297,7 @@ class DPS310:
 
     @property
     def pressure(self):
-        """Returns the current pressure reading in kPA"""
+        """Returns the current pressure reading in hPA"""
 
         temp_reading = self._raw_temperature
         raw_temperature = self._twos_complement(temp_reading, 24)
