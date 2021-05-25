@@ -146,17 +146,17 @@ SampleCount.add_values(
 # pylint: enable=unnecessary-pass
 
 _DPS310_DEFAULT_ADDRESS = const(0x77)  # DPS310 default i2c address
-_DPS310_DEVICE_ID = const(0x10)  # DPS310 device identifier
+#_DPS310_DEVICE_ID = const(0x10)  # DPS310 device identifier
 
-_DPS310_PRSB2 = const(0x00)  # Highest byte of pressure data
-_DPS310_TMPB2 = const(0x03)  # Highest byte of temperature data
+#_DPS310_PRSB2 = const(0x00)  # Highest byte of pressure data
+#_DPS310_TMPB2 = const(0x03)  # Highest byte of temperature data
 _DPS310_PRSCFG = const(0x06)  # Pressure configuration
 _DPS310_TMPCFG = const(0x07)  # Temperature configuration
-_DPS310_MEASCFG = const(0x08)  # Sensor configuration
-_DPS310_CFGREG = const(0x09)  # Interrupt/FIFO configuration
-_DPS310_RESET = const(0x0C)  # Soft reset
-_DPS310_PRODREVID = const(0x0D)  # Register that contains the part ID
-_DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
+#_DPS310_MEASCFG = const(0x08)  # Sensor configuration
+#_DPS310_CFGREG = const(0x09)  # Interrupt/FIFO configuration
+#_DPS310_RESET = const(0x0C)  # Soft reset
+#_DPS310_PRODREVID = const(0x0D)  # Register that contains the part ID
+#_DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 
 
 class DPS310_Advanced(DPS310):
