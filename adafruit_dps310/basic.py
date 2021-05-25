@@ -60,7 +60,7 @@ _DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 class DPS310:
     # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
-    Depending on your board memory availability you could use DPS310_Featured.
+    Depending on your board memory availability you could use DPS310_Advanced.
 
     :param ~busio.I2C i2c_bus: The I2C bus the DPS310 is connected to.
     :param int address: The I2C device address. Defaults to :const:`0x77`
