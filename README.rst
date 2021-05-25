@@ -60,7 +60,7 @@ Usage Example
 
     import time
     import board
-    from adafruit_dps310.dps310 import DPS310
+    from adafruit_dps310.basic import DPS310
 
     i2c = board.I2C()   # uses board.SCL and board.SDA
 
