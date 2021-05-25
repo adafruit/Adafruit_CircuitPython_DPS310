@@ -199,9 +199,6 @@ class DPS310_Advanced(DPS310):
     def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
         super().__init__(i2c_bus, _DPS310_DEFAULT_ADDRESS)
 
-        self.sea_level_pressure = 1013.25
-        """Pressure in hectoPascals at sea level. Used to calibrate :attr:`altitude`."""
-        self.initialize()
 
     def initialize(self):
         """Initialize the sensor to continuous measurement"""
