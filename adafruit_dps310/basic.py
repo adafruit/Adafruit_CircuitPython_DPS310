@@ -73,7 +73,7 @@ class DPS310:
         .. code-block:: python
 
             import board
-            import adafruit_dps310
+            from adafruit_dps310.basic import DPS310
 
         Once this is done you can define your `board.I2C` object and define your sensor object
 
