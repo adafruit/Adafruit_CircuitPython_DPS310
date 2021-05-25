@@ -80,7 +80,7 @@ class DPS310:
         .. code-block:: python
 
             i2c = board.I2C()   # uses board.SCL and board.SDA
-            dps310 = adafruit_dps310.DPS310(i2c)
+            dps310 = DPS310(i2c)
 
         Now you have access to the :attr:`temperature` and :attr:`pressure` attributes.
 
