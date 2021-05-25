@@ -78,7 +78,7 @@ Caveat: by default the library initializes the IC with constant temperature and 
 Known Issues
 ============
 Library extensive features might not be compatible with memory limited boards.
-For boards with more memory avalaible you could use the code present
+For boards with more memory available you could use the code present
 in ``dps310_advanced.py``. For usage refer to ``dps310_simpletest_advanced.py``
 
 
