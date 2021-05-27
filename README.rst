@@ -13,6 +13,10 @@ Introduction
     :target: https://github.com/adafruit/Adafruit_CircuitPython_DPS310/actions
     :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code Style: Black
+
 Library for the DPS310 Precision Barometric Pressure Sensor
 
 
@@ -72,14 +76,14 @@ Usage Example
         print("")
         time.sleep(1.0)
 
-Caveat: by default the library initializes the IC with constant temperature and pressure measurements at 64Hz with 64 samples. It is not possible to change the IC's mode, temperature_oversample_count or pressure_oversample_count on-the-fly so resetting the IC and operation parameteres is required. For instance, to set the mode to continuous pressure measurement at 1Hz with 2 samples:
-
 
 Known Issues
 ============
-Library extensive features might not be compatible with memory limited boards.
+Library extensive features might not be compatible with memory limited boards. For these kind of
+boards you need to use the ``adafruit_dps310/basic.mpy``, the file needs to be in the ``mpy``
+format in order to fit in memory.
 For boards with more memory available you could use the code present
-in ``adafruit_dps310/dps310_advanced.py``. For usage refer to ``dps310_simpletest_advanced.py``
+in ``adafruit_dps310/advanced.py``. For usage refer to ``dps310_simpletest_advanced.py``
 
 
 Contributing

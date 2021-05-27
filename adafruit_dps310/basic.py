@@ -146,8 +146,8 @@ class DPS310:
             1040384,
             2088960,
         )
-        self.sea_level_pressure = 1013.25
-        """Pressure in hectoPascals at sea level. Used to calibrate :attr:`altitude`."""
+        self._sea_level_pressure = 1013.25
+
         self.initialize()
 
     def initialize(self):
@@ -223,7 +223,9 @@ class DPS310:
     def altitude(self):
         """The altitude based on the sea level pressure (:attr:`sea_level_pressure`) -
         which you must enter ahead of time)"""
-        return 44330 * (1.0 - math.pow(self.pressure / self.sea_level_pressure, 0.1903))
+        return 44330 * (
+            1.0 - math.pow(self.pressure / self._sea_level_pressure, 0.1903)
+        )
 
     @property
     def temperature(self):
@@ -231,6 +233,17 @@ class DPS310:
         _scaled_rawtemp = self._raw_temperature / self._temp_scale
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
         return _temperature
+
+    @property
+    def sea_level_pressure(self):
+        """The local sea level pressure in hectoPascals (aka millibars). This is used
+        for calculation of :attr:`altitude`. Values are typically in the range
+        980 - 1030."""
+        return self._sea_level_pressure
+
+    @sea_level_pressure.setter
+    def sea_level_pressure(self, value):
+        self._sea_level_pressure = value
 
     def wait_temperature_ready(self):
         """Wait until a temperature measurement is available."""
