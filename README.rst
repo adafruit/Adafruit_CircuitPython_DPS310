@@ -57,6 +57,29 @@ To install in a virtual environment in your current project:
     source .env/bin/activate
     pip3 install adafruit-circuitpython-dps310
 
+
+Installing to a connected CircuitPython Device
+==============================================
+Some devices, eg. the QT-PY, are very limited in memory. The DPS310 library contains
+two variants - basic and advanced - which give different levels of functionality.
+
+Installing the DPS310 library could have the following outcomes:
+
+    * It installs successfully and your code runs successfully. Woo-hoo! Continue with
+      your amazing project.
+    * It installs successfully and your code fails to run with a memory allocation
+      error. Try one of the following:
+
+        * If your ``code.py`` is large, especially if it has lots of comments, you
+          can shrink it into a ``.mpy`` file instead. See the Adafruit
+          `Learn Guide <https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/non-volatile-not-enough-disk-space>`_
+          on shrinking your code.
+        * Only use the basic DPS310 implementation, and remove the following file:
+          ``<CIRCUITPY>/lib/adafruit_dps310/advanced.mpy`` where <CIRCUITPY> is the
+          mounted location of your device. Make sure that your code only uses the basic
+          implementation.
+
+
 Usage Example
 =============
 
