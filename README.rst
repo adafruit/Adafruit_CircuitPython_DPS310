@@ -90,6 +90,11 @@ Library extensive features might not be compatible with memory limited boards. L
 load in SAMD21 boards and others with 32KB of RAM or less.
 
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/dps310/en/latest/>`_.
+
 Contributing
 ============
 
