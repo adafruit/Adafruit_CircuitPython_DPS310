@@ -108,7 +108,7 @@ Mode.add_values(
 class Rate(CV):
     """Options for :attr:`pressure_rate` and :attr:`temperature_rate`"""
 
-    pass  # pylint: disable=unnecessary-pass
+    pass
 
 
 Rate.add_values(
@@ -227,11 +227,7 @@ class DPS310_Advanced(DPS310):
         ie. ``Mode.ONE_TEMPERATURE``, ``Mode.CONT_TEMP`` or ``Mode.CONT_PRESTEMP``.
         See the `Mode` documentation for details.
         """
-        if (
-            self._mode_bits == Mode.IDLE
-            or self._mode_bits == Mode.ONE_PRESSURE
-            or self._mode_bits == Mode.CONT_PRESSURE
-        ):
+        if self._mode_bits in (Mode.IDLE, Mode.ONE_PRESSURE, Mode.CONT_PRESSURE):
             raise RuntimeError(
                 "Sensor mode is set to idle or pressure measurement,\
                     can't wait for a temperature measurement"
@@ -252,11 +248,7 @@ class DPS310_Advanced(DPS310):
         ie.  ``Mode.ONE_PRESSURE``, ``Mode.CONT_PRESSURE`` or ``Mode.CONT_PRESTEMP``
         See the `Mode` documentation for details.
         """
-        if (
-            self._mode_bits == Mode.IDLE
-            or self._mode_bits == Mode.ONE_TEMPERATURE
-            or self._mode_bits == Mode.CONT_TEMP
-        ):
+        if self._mode_bits in (Mode.IDLE, Mode.ONE_TEMPERATURE, Mode.CONT_TEMP):
             raise RuntimeError(
                 "Sensor mode is set to idle or temperature measurement,\
                     can't wait for a pressure measurement"
