@@ -13,6 +13,10 @@ Introduction
     :target: https://github.com/adafruit/Adafruit_CircuitPython_DPS310/actions
     :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code Style: Black
+
 Library for the DPS310 Precision Barometric Pressure Sensor
 
 
@@ -53,6 +57,29 @@ To install in a virtual environment in your current project:
     source .env/bin/activate
     pip3 install adafruit-circuitpython-dps310
 
+
+Installing to a connected CircuitPython Device
+==============================================
+Some devices, eg. the QT-PY, are very limited in memory. The DPS310 library contains
+two variants - basic and advanced - which give different levels of functionality.
+
+Installing the DPS310 library could have the following outcomes:
+
+    * It installs successfully and your code runs successfully. Woo-hoo! Continue with
+      your amazing project.
+    * It installs successfully and your code fails to run with a memory allocation
+      error. Try one of the following:
+
+        * If your ``code.py`` is large, especially if it has lots of comments, you
+          can shrink it into a ``.mpy`` file instead. See the Adafruit
+          `Learn Guide <https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/non-volatile-not-enough-disk-space>`_
+          on shrinking your code.
+        * Only use the basic DPS310 implementation, and remove the following file:
+          ``<CIRCUITPY>/lib/adafruit_dps310/advanced.mpy`` where <CIRCUITPY> is the
+          mounted location of your device. Make sure that your code only uses the basic
+          implementation.
+
+
 Usage Example
 =============
 
@@ -60,11 +87,11 @@ Usage Example
 
     import time
     import board
-    import adafruit_dps310
+    from adafruit_dps310.basic import DPS310
 
     i2c = board.I2C()   # uses board.SCL and board.SDA
 
-    dps310 = adafruit_dps310.DPS310(i2c)
+    dps310 = DPS310(i2c)
 
     while True:
         print("Temperature = %.2f *C"%dps310.temperature)
@@ -72,22 +99,14 @@ Usage Example
         print("")
         time.sleep(1.0)
 
-Caveat: by default the library initializes the IC with constant temperature and pressure measurements at 64Hz with 64 samples. It is not possible to change the IC's mode, temperature_oversample_count or pressure_oversample_count on-the-fly so resetting the IC and operation parameteres is required. For instance, to set the mode to continuous pressure measurement at 1Hz with 2 samples:
-
-.. code-block:: python3
-
-    dps310.reset()
-    dps310.pressure_oversample_count = adafruit_dps310.SampleCount.COUNT_2
-    dps310.pressure_rate = adafruit_dps310.Rate.RATE_1_HZ
-    dps310.mode = adafruit_dps310.Mode.CONT_PRESSURE
-    dps310.wait_pressure_ready()
-
-
 
 Known Issues
 ============
-Library extensive features might not be compatible with memory limited boards. Library might not
-load in SAMD21 boards and others with 32KB of RAM or less.
+Library extensive features might not be compatible with memory limited boards. For these kind of
+boards you need to use the ``adafruit_dps310/basic.mpy``, the file needs to be in the ``mpy``
+format in order to fit in memory.
+For boards with more memory available you could use the code present
+in ``adafruit_dps310/advanced.py``. For usage refer to ``dps310_simpletest_advanced.py``
 
 
 Documentation

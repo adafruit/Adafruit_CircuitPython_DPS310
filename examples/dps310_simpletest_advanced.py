@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-FileCopyrightText: 2021 Jose David M.
 # SPDX-License-Identifier: MIT
 
 import time
 import board
-from adafruit_dps310.basic import DPS310
+from adafruit_dps310.advanced import DPS310_Advanced as DPS310
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 dps310 = DPS310(i2c)
