@@ -1,0 +1,1 @@
+from adafruit_dps310.advanced import DPS310_Advanced as DPS310
