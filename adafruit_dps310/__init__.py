@@ -5,7 +5,8 @@
 """
 `adafruit_dps310`
 ================================================================================
-Dynamic progress bar widget for CircuitPython displays
+Library for the DPS310 Precision Barometric Pressure Sensor
+
 * Author(s): Bryan Siepert, Jose David M.
 Implementation Notes
 --------------------
