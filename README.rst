@@ -2,7 +2,7 @@ Introduction
 ============
 
 .. image:: https://readthedocs.org/projects/adafruit-circuitpython-dsp310/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/dps310/en/latest/
+    :target: https://docs.circuitpython.org/projects/dps310/en/latest/
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/discord/327254708534116352.svg
@@ -112,7 +112,7 @@ in ``adafruit_dps310/advanced.py``. For usage refer to ``dps310_simpletest_advan
 Documentation
 =============
 
-API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/dps310/en/latest/>`_.
+API documentation for this library can be found on `Read the Docs <https://docs.circuitpython.org/projects/dps310/en/latest/>`_.
 
 Contributing
 ============
