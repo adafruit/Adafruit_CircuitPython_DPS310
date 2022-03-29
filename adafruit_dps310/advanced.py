@@ -196,9 +196,6 @@ class DPS310_Advanced(DPS310):
     _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
     _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
 
-    def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
-        super().__init__(i2c_bus, address)
-
     def initialize(self):
         """Initialize the sensor to continuous measurement"""
 
