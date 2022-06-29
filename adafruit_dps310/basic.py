@@ -198,22 +198,23 @@ class DPS310:
 
     @property
     def pressure(self):
-        """Returns the current pressure reading in kPA"""
+        """Returns the current pressure reading in hectoPascals (hPa)"""
 
         temp_reading = self._raw_temperature
         raw_temperature = self._twos_complement(temp_reading, 24)
+
         pressure_reading = self._raw_pressure
         raw_pressure = self._twos_complement(pressure_reading, 24)
-        _scaled_rawtemp = raw_temperature / self._temp_scale
 
-        _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
-
-        p_red = raw_pressure / self._pressure_scale
+        scaled_rawtemp = raw_temperature / self._temp_scale
+        scaled_rawpres = raw_pressure / self._pressure_scale
 
         pres_calc = (
             self._c00
-            + p_red * (self._c10 + p_red * (self._c20 + p_red * self._c30))
-            + _scaled_rawtemp * (self._c01 + p_red * (self._c11 + p_red * self._c21))
+            + scaled_rawpres
+            * (self._c10 + scaled_rawpres * (self._c20 + scaled_rawpres * self._c30))
+            + scaled_rawtemp
+            * (self._c01 + scaled_rawpres * (self._c11 + scaled_rawpres * self._c21))
         )
 
         final_pressure = pres_calc / 100
@@ -221,8 +222,10 @@ class DPS310:
 
     @property
     def altitude(self):
-        """The altitude based on the sea level pressure (:attr:`sea_level_pressure`) -
-        which you must enter ahead of time)"""
+        """The altitude in meters based on the sea level pressure
+        (:attr:`sea_level_pressure`) - which you must enter
+        ahead of time
+        """
         return 44330 * (
             1.0 - math.pow(self.pressure / self._sea_level_pressure, 0.1903)
         )
