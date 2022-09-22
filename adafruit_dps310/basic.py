@@ -43,6 +43,12 @@ from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
 from adafruit_register.i2c_bit import RWBit, ROBit
 from adafruit_register.i2c_bits import RWBits, ROBits
 
+try:
+    import typing  # pylint: disable=unused-import
+    from busio import I2C
+except ImportError:
+    pass
+
 _DPS310_DEFAULT_ADDRESS = const(0x77)  # DPS310 default i2c address
 _DPS310_DEVICE_ID = const(0x10)  # DPS310 device identifier
 
@@ -118,7 +124,7 @@ class DPS310:
     _reg0f = RWBits(8, 0x0F, 0)
     _reg62 = RWBits(8, 0x62, 0)
 
-    def __init__(self, i2c_bus, address=_DPS310_DEFAULT_ADDRESS):
+    def __init__(self, i2c_bus: I2C, address: int = _DPS310_DEFAULT_ADDRESS) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
 
         if self._device_id != _DPS310_DEVICE_ID:
@@ -150,7 +156,7 @@ class DPS310:
 
         self.initialize()
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize the sensor to continuous measurement"""
 
         self.reset()
@@ -171,7 +177,7 @@ class DPS310:
 
     # (https://github.com/Infineon/DPS310-Pressure-Sensor#temperature-measurement-issue)
     # similar to DpsClass::correctTemp(void) from infineon's c++ library
-    def _correct_temp(self):
+    def _correct_temp(self) -> None:
         """Correct temperature readings on ICs with a fuse bit problem"""
         self._reg0e = 0xA5
         self._reg0f = 0x96
@@ -184,7 +190,7 @@ class DPS310:
         # and used for compensation when calculating pressure
         _unused = self._raw_temperature
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the sensor"""
         self._reset_register = 0x89
         # wait for hardware reset to finish
@@ -197,7 +203,7 @@ class DPS310:
         self._temp_measurement_src_bit = self._calib_coeff_temp_src_bit
 
     @property
-    def pressure(self):
+    def pressure(self) -> float:
         """Returns the current pressure reading in hectoPascals (hPa)"""
 
         temp_reading = self._raw_temperature
@@ -221,7 +227,7 @@ class DPS310:
         return final_pressure
 
     @property
-    def altitude(self):
+    def altitude(self) -> float:
         """The altitude in meters based on the sea level pressure
         (:attr:`sea_level_pressure`) - which you must enter
         ahead of time
@@ -231,43 +237,43 @@ class DPS310:
         )
 
     @property
-    def temperature(self):
+    def temperature(self) -> float:
         """The current temperature reading in degrees Celsius"""
         _scaled_rawtemp = self._raw_temperature / self._temp_scale
         _temperature = _scaled_rawtemp * self._c1 + self._c0 / 2.0
         return _temperature
 
     @property
-    def sea_level_pressure(self):
+    def sea_level_pressure(self) -> int:
         """The local sea level pressure in hectoPascals (aka millibars). This is used
         for calculation of :attr:`altitude`. Values are typically in the range
         980 - 1030."""
         return self._sea_level_pressure
 
     @sea_level_pressure.setter
-    def sea_level_pressure(self, value):
+    def sea_level_pressure(self, value: int) -> None:
         self._sea_level_pressure = value
 
-    def wait_temperature_ready(self):
+    def wait_temperature_ready(self) -> None:
         """Wait until a temperature measurement is available."""
 
         while self._temp_ready is False:
             sleep(0.001)
 
-    def wait_pressure_ready(self):
+    def wait_pressure_ready(self) -> None:
         """Wait until a pressure measurement is available"""
 
         while self._pressure_ready is False:
             sleep(0.001)
 
     @staticmethod
-    def _twos_complement(val, bits):
+    def _twos_complement(val: int, bits: int) -> int:
         if val & (1 << (bits - 1)):
             val -= 1 << bits
 
         return val
 
-    def _read_calibration(self):
+    def _read_calibration(self) -> None:
 
         while not self._coefficients_ready:
             sleep(0.001)
