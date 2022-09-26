@@ -41,7 +41,7 @@ from adafruit_register.i2c_bits import RWBits
 from adafruit_dps310.basic import DPS310
 
 try:
-    from typing import Tuple, Union
+    from typing import Iterable, Optional, Tuple, Union
 except ImportError:
     pass
 
@@ -53,7 +53,7 @@ class CV:
 
     @classmethod
     def add_values(
-        cls, value_tuples: Tuple[str, int, Union[str, int], Union[str, int, None]]
+        cls, value_tuples: Iterable[Tuple[str, int, Union[str, int], Optional[float]]]
     ):
         """Add CV values to the class"""
         cls.string = {}
