@@ -244,14 +244,14 @@ class DPS310:
         return _temperature
 
     @property
-    def sea_level_pressure(self) -> int:
+    def sea_level_pressure(self) -> float:
         """The local sea level pressure in hectoPascals (aka millibars). This is used
         for calculation of :attr:`altitude`. Values are typically in the range
         980 - 1030."""
         return self._sea_level_pressure
 
     @sea_level_pressure.setter
-    def sea_level_pressure(self, value: int) -> None:
+    def sea_level_pressure(self, value: float) -> None:
         self._sea_level_pressure = value
 
     def wait_temperature_ready(self) -> None:
