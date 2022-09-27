@@ -40,6 +40,11 @@ from micropython import const
 from adafruit_register.i2c_bits import RWBits
 from adafruit_dps310.basic import DPS310
 
+try:
+    from typing import Iterable, Optional, Tuple, Union
+except ImportError:
+    pass
+
 # pylint: disable=no-member,unnecessary-pass
 
 
@@ -47,7 +52,9 @@ class CV:
     """struct helper"""
 
     @classmethod
-    def add_values(cls, value_tuples):
+    def add_values(
+        cls, value_tuples: Iterable[Tuple[str, int, Union[str, int], Optional[float]]]
+    ):
         """Add CV values to the class"""
         cls.string = {}
         cls.lsb = {}
@@ -59,7 +66,7 @@ class CV:
             cls.lsb[value] = lsb
 
     @classmethod
-    def is_valid(cls, value):
+    def is_valid(cls, value: int) -> bool:
         """Validate that a given value is a member"""
         return value in cls.string
 
@@ -196,7 +203,7 @@ class DPS310_Advanced(DPS310):
     _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
     _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize the sensor to continuous measurement"""
 
         self.reset()
@@ -212,11 +219,11 @@ class DPS310_Advanced(DPS310):
         self.wait_pressure_ready()
 
     @property
-    def temperature_ready(self):
+    def temperature_ready(self) -> bool:
         """Returns true if there is a temperature reading ready"""
         return self._temp_ready
 
-    def wait_temperature_ready(self):
+    def wait_temperature_ready(self) -> None:
         """Wait until a temperature measurement is available.
 
         To avoid waiting indefinitely this function raises an
@@ -233,11 +240,11 @@ class DPS310_Advanced(DPS310):
             sleep(0.001)
 
     @property
-    def pressure_ready(self):
+    def pressure_ready(self) -> bool:
         """Returns true if pressure readings are ready"""
         return self._pressure_ready
 
-    def wait_pressure_ready(self):
+    def wait_pressure_ready(self) -> None:
         """Wait until a pressure measurement is available
 
         To avoid waiting indefinitely this function raises an
@@ -254,35 +261,35 @@ class DPS310_Advanced(DPS310):
             sleep(0.001)
 
     @property
-    def mode(self):
+    def mode(self) -> int:
         """The measurement mode. Must be a `Mode`. See the `Mode` documentation for details"""
         return self._mode_bits
 
     @mode.setter
-    def mode(self, value):
+    def mode(self, value: int) -> None:
         if not Mode.is_valid(value):
             raise AttributeError("mode must be an `Mode`")
 
         self._mode_bits = value
 
     @property
-    def pressure_rate(self):
+    def pressure_rate(self) -> int:
         """Configure the pressure measurement rate. Must be a `Rate`"""
         return self._pressure_ratebits
 
     @pressure_rate.setter
-    def pressure_rate(self, value):
+    def pressure_rate(self, value: int) -> None:
         if not Rate.is_valid(value):
             raise AttributeError("pressure_rate must be a Rate")
         self._pressure_ratebits = value
 
     @property
-    def pressure_oversample_count(self):
+    def pressure_oversample_count(self) -> int:
         """The number of samples taken per pressure measurement. Must be a ``SampleCount``"""
         return self._pressure_osbits
 
     @pressure_oversample_count.setter
-    def pressure_oversample_count(self, value):
+    def pressure_oversample_count(self, value: int) -> None:
         if not SampleCount.is_valid(value):
             raise AttributeError("pressure_oversample_count must be a SampleCount")
 
@@ -291,23 +298,23 @@ class DPS310_Advanced(DPS310):
         self._pressure_scale = self._oversample_scalefactor[value]
 
     @property
-    def temperature_rate(self):
+    def temperature_rate(self) -> int:
         """Configure the temperature measurement rate. Must be a `Rate`"""
         return self._temp_ratebits
 
     @temperature_rate.setter
-    def temperature_rate(self, value):
+    def temperature_rate(self, value: int) -> None:
         if not Rate.is_valid(value):
             raise AttributeError("temperature_rate must be a Rate")
         self._temp_ratebits = value
 
     @property
-    def temperature_oversample_count(self):
+    def temperature_oversample_count(self) -> int:
         """The number of samples taken per temperature measurement. Must be a ``SampleCount``"""
         return self._temp_osbits
 
     @temperature_oversample_count.setter
-    def temperature_oversample_count(self, value):
+    def temperature_oversample_count(self, value: int) -> None:
         if not SampleCount.is_valid(value):
             raise AttributeError("temperature_oversample_count must be a SampleCount")
 
