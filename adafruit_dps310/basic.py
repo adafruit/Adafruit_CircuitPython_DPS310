@@ -274,7 +274,6 @@ class DPS310:
         return val
 
     def _read_calibration(self) -> None:
-
         while not self._coefficients_ready:
             sleep(0.001)
 
@@ -285,7 +284,6 @@ class DPS310:
             buffer[0] = 0x10 + offset
 
             with self.i2c_device as i2c:
-
                 i2c.write_then_readinto(buffer, buffer, out_end=1, in_start=1)
 
                 coeffs[offset] = buffer[1]
