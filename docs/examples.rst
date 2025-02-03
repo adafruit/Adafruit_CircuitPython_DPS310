@@ -27,3 +27,12 @@ sampling counts and mode optimized for low power
 .. literalinclude:: ../examples/dps310_low_power_weather_station.py
     :caption: examples/dps310_low_power_weather_station.py
     :linenos:
+
+DisplayIO Simpletest
+---------------------
+
+This is a simple test for boards with built-in display.
+
+.. literalinclude:: ../examples/dps310_displayio_simpletest.py
+    :caption: examples/dps310_displayio_simpletest.py
+    :linenos:
