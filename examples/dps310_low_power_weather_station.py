@@ -8,12 +8,10 @@ in Infineon's datasheet:
 https://www.infineon.com/dgdl/Infineon-DPS310-DS-v01_00-EN.pdf
 """
 
-# (disable pylint warnings for adafruit_dps310.{SampleCount,Rate,Mode}.*
-# as they are generated dynamically)
-# pylint: disable=no-member
-
 import time
+
 import board
+
 from adafruit_dps310 import advanced
 
 i2c = board.I2C()  # uses board.SCL and board.SDA

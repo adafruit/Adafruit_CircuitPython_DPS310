@@ -36,8 +36,10 @@ __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 
 from time import sleep
-from micropython import const
+
 from adafruit_register.i2c_bits import RWBits
+from micropython import const
+
 from adafruit_dps310.basic import DPS310
 
 try:
@@ -45,16 +47,12 @@ try:
 except ImportError:
     pass
 
-# pylint: disable=no-member,unnecessary-pass
-
 
 class CV:
     """struct helper"""
 
     @classmethod
-    def add_values(
-        cls, value_tuples: Iterable[Tuple[str, int, Union[str, int], Optional[float]]]
-    ):
+    def add_values(cls, value_tuples: Iterable[Tuple[str, int, Union[str, int], Optional[float]]]):
         """Add CV values to the class"""
         cls.string = {}
         cls.lsb = {}
@@ -97,7 +95,7 @@ class Mode(CV):
 
     """
 
-    pass  # pylint: disable=unnecessary-pass
+    pass
 
 
 Mode.add_values(
@@ -150,7 +148,6 @@ SampleCount.add_values(
         ("COUNT_128", 7, 128, None),
     )
 )
-# pylint: enable=unnecessary-pass
 
 _DPS310_DEFAULT_ADDRESS = const(0x77)  # DPS310 default i2c address
 # _DPS310_DEVICE_ID = const(0x10)  # DPS310 device identifier
@@ -167,7 +164,6 @@ _DPS310_TMPCFG = const(0x07)  # Temperature configuration
 
 
 class DPS310_Advanced(DPS310):
-    # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
     This class contains some of other configurable features
 
@@ -199,6 +195,7 @@ class DPS310_Advanced(DPS310):
             pressure = dps310.pressure
 
     """
+
     # Register definitions
     _pressure_ratebits = RWBits(3, _DPS310_PRSCFG, 4)
     _temp_ratebits = RWBits(3, _DPS310_TMPCFG, 4)
@@ -231,7 +228,7 @@ class DPS310_Advanced(DPS310):
         ie. ``Mode.ONE_TEMPERATURE``, ``Mode.CONT_TEMP`` or ``Mode.CONT_PRESTEMP``.
         See the `Mode` documentation for details.
         """
-        if self._mode_bits in (Mode.IDLE, Mode.ONE_PRESSURE, Mode.CONT_PRESSURE):
+        if self._mode_bits in {Mode.IDLE, Mode.ONE_PRESSURE, Mode.CONT_PRESSURE}:
             raise RuntimeError(
                 "Sensor mode is set to idle or pressure measurement,\
                     can't wait for a temperature measurement"
@@ -252,7 +249,7 @@ class DPS310_Advanced(DPS310):
         ie.  ``Mode.ONE_PRESSURE``, ``Mode.CONT_PRESSURE`` or ``Mode.CONT_PRESTEMP``
         See the `Mode` documentation for details.
         """
-        if self._mode_bits in (Mode.IDLE, Mode.ONE_TEMPERATURE, Mode.CONT_TEMP):
+        if self._mode_bits in {Mode.IDLE, Mode.ONE_TEMPERATURE, Mode.CONT_TEMP}:
             raise RuntimeError(
                 "Sensor mode is set to idle or temperature measurement,\
                     can't wait for a pressure measurement"

@@ -37,14 +37,16 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DPS310.git"
 # Common imports; remove if unused or pylint will complain
 import math
 from time import sleep
-from micropython import const
+
 from adafruit_bus_device import i2c_device
-from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
-from adafruit_register.i2c_bit import RWBit, ROBit
-from adafruit_register.i2c_bits import RWBits, ROBits
+from adafruit_register.i2c_bit import ROBit, RWBit
+from adafruit_register.i2c_bits import ROBits, RWBits
+from adafruit_register.i2c_struct import ROUnaryStruct, UnaryStruct
+from micropython import const
 
 try:
-    import typing  # pylint: disable=unused-import
+    import typing
+
     from busio import I2C
 except ImportError:
     pass
@@ -64,7 +66,6 @@ _DPS310_TMPCOEFSRCE = const(0x28)  # Temperature calibration src
 
 
 class DPS310:
-    # pylint: disable=too-many-instance-attributes
     """Library for the DPS310 Precision Barometric Pressure Sensor.
     Depending on your board memory availability you could use DPS310_Advanced.
 
@@ -96,10 +97,11 @@ class DPS310:
             pressure = dps310.pressure
 
     """
+
     # Register definitions
     _device_id = ROUnaryStruct(_DPS310_PRODREVID, ">B")
     _reset_register = UnaryStruct(_DPS310_RESET, ">B")
-    _mode_bits = RWBits(3, _DPS310_MEASCFG, 0)  #
+    _mode_bits = RWBits(3, _DPS310_MEASCFG, 0)
 
     _pressure_osbits = RWBits(4, _DPS310_PRSCFG, 0)
 
@@ -232,9 +234,7 @@ class DPS310:
         (:attr:`sea_level_pressure`) - which you must enter
         ahead of time
         """
-        return 44330 * (
-            1.0 - math.pow(self.pressure / self._sea_level_pressure, 0.1903)
-        )
+        return 44330 * (1.0 - math.pow(self.pressure / self._sea_level_pressure, 0.1903))
 
     @property
     def temperature(self) -> float:
