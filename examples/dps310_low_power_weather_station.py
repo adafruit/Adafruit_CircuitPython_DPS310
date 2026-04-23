@@ -28,7 +28,7 @@ dps310.wait_temperature_ready()
 dps310.wait_pressure_ready()
 
 while True:
-    print("Temperature = %.2f *C" % dps310.temperature)
-    print("Pressure = %.2f hPa" % dps310.pressure)
+    print(f"Temperature = {dps310.temperature:.2f} *C")
+    print(f"Pressure = {dps310.pressure:.2f} hPa")
     print("")
     time.sleep(10.0)
